@@ -3,19 +3,20 @@ import { Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetMeQuery, useUpdateProfileMutation, useUploadAvatarMutation } from '@/store/authApi';
 
 function getInitials(name?: string | null, email?: string | null) {
-  if (name) return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  if (name)
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   return email?.[0]?.toUpperCase() ?? '?';
 }
 
@@ -117,8 +118,12 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
 
         <Tabs defaultValue="profile">
           <TabsList className="w-full">
-            <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
-            <TabsTrigger value="security" className="flex-1">Security</TabsTrigger>
+            <TabsTrigger value="profile" className="flex-1">
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex-1">
+              Security
+            </TabsTrigger>
           </TabsList>
 
           {/* Profile tab */}
@@ -174,7 +179,9 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
               disabled={!profileDirty || isSavingProfile || isUploadingAvatar}
               className="w-full"
             >
-              {(isSavingProfile || isUploadingAvatar) && <Loader2 className="h-4 w-4 animate-spin" />}
+              {(isSavingProfile || isUploadingAvatar) && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
               Save profile
             </Button>
           </TabsContent>
@@ -226,7 +233,13 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
 
             <Button
               onClick={handleChangePassword}
-              disabled={!hasPassword || !currentPassword || !newPassword || !confirmPassword || isSavingProfile}
+              disabled={
+                !hasPassword ||
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword ||
+                isSavingProfile
+              }
               className="w-full"
             >
               {isSavingProfile && <Loader2 className="h-4 w-4 animate-spin" />}

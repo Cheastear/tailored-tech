@@ -9,7 +9,9 @@ const NAV_ITEMS: { label: string; view: ActiveView; icon: React.ElementType }[] 
 ];
 
 export function SidebarNav() {
-  const { activeView, setActiveView } = useNavigation();
+  const { spaceId, activeView, setActiveView } = useNavigation();
+
+  if (!spaceId) return null;
 
   return (
     <nav className="space-y-0.5 px-2">

@@ -25,63 +25,67 @@ export function PageHeader() {
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem>
-            {activeView === 'files' && folderPath.length === 0 ? (
-              <BreadcrumbPage>{spaceName}</BreadcrumbPage>
-            ) : activeView === 'files' ? (
-              <BreadcrumbLink className="cursor-pointer" onClick={() => navigateTo(-1)}>
-                {spaceName}
-              </BreadcrumbLink>
-            ) : (
-              <BreadcrumbPage>{spaceName}</BreadcrumbPage>
-            )}
-          </BreadcrumbItem>
-
-          {activeView === 'files' && folderPath.map((folder, index) => {
-            const isLast = index === folderPath.length - 1;
-            return (
-              <Fragment key={folder.id}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  {isLast ? (
-                    <BreadcrumbPage>{folder.name}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink
-                      className="cursor-pointer"
-                      onClick={() => navigateTo(index)}
-                    >
-                      {folder.name}
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </Fragment>
-            );
-          })}
-
-          {activeView !== 'files' && (
+          {!spaceId ? (
+            <BreadcrumbItem>
+              <BreadcrumbPage>Spaces</BreadcrumbPage>
+            </BreadcrumbItem>
+          ) : (
             <>
-              <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage className="capitalize">{activeView}</BreadcrumbPage>
+                {activeView === 'files' && folderPath.length === 0 ? (
+                  <BreadcrumbPage>{spaceName}</BreadcrumbPage>
+                ) : activeView === 'files' ? (
+                  <BreadcrumbLink className="cursor-pointer" onClick={() => navigateTo(-1)}>
+                    {spaceName}
+                  </BreadcrumbLink>
+                ) : (
+                  <BreadcrumbPage>{spaceName}</BreadcrumbPage>
+                )}
               </BreadcrumbItem>
+
+              {activeView === 'files' &&
+                folderPath.map((folder, index) => {
+                  const isLast = index === folderPath.length - 1;
+                  return (
+                    <Fragment key={folder.id}>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        {isLast ? (
+                          <BreadcrumbPage>{folder.name}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink
+                            className="cursor-pointer"
+                            onClick={() => navigateTo(index)}
+                          >
+                            {folder.name}
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                    </Fragment>
+                  );
+                })}
+
+              {activeView !== 'files' && (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="capitalize">{activeView}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              )}
             </>
           )}
         </BreadcrumbList>
       </Breadcrumb>
 
-      {activeView === 'files' && (
+      {spaceId && activeView === 'files' && (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1.5">
             <Filter className="h-4 w-4" />
             Filter
           </Button>
           <Separator orientation="vertical" className="h-5" />
-          <Button
-            size="sm"
-            className="gap-1.5"
-            disabled={!spaceId}
-            onClick={() => setUploadOpen(true)}
-          >
+          <Button size="sm" className="gap-1.5" onClick={() => setUploadOpen(true)}>
             <Upload className="h-4 w-4" />
             Upload
           </Button>

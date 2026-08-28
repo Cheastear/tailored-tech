@@ -34,8 +34,7 @@ export function UploadModal({ open, onOpenChange }: Props) {
     });
   };
 
-  const removeFile = (index: number) =>
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  const removeFile = (index: number) => setFiles((prev) => prev.filter((_, i) => i !== index));
 
   const handleUpload = async () => {
     if (!spaceId || !files.length) return;
@@ -51,9 +50,7 @@ export function UploadModal({ open, onOpenChange }: Props) {
   };
 
   const label =
-    files.length > 0
-      ? `Upload ${files.length} file${files.length !== 1 ? 's' : ''}`
-      : 'Upload';
+    files.length > 0 ? `Upload ${files.length} file${files.length !== 1 ? 's' : ''}` : 'Upload';
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -90,11 +87,7 @@ export function UploadModal({ open, onOpenChange }: Props) {
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleUpload} disabled={!files.length || isLoading}>

@@ -30,21 +30,20 @@ export function UploadToast({ status, fileName, onCancel, progress, errorMessage
     }
   }, [status, progress]);
 
-  const realWidth = progress && progress.total > 0
-    ? (progress.loaded / progress.total) * 100
-    : null;
+  const realWidth =
+    progress && progress.total > 0 ? (progress.loaded / progress.total) * 100 : null;
 
   const isProcessing = status === 'uploading' && realWidth !== null && realWidth >= 100;
 
-  const barWidth = status === 'done' || status === 'error' || isProcessing
-    ? 100
-    : (realWidth ?? simulatedWidth);
+  const barWidth =
+    status === 'done' || status === 'error' || isProcessing ? 100 : (realWidth ?? simulatedWidth);
 
-  const barTransition = status === 'done' || status === 'error'
-    ? 'width 300ms ease-in-out'
-    : realWidth !== null
-      ? 'width 200ms linear'
-      : 'width 8s cubic-bezier(0.05, 0.6, 0.3, 1)';
+  const barTransition =
+    status === 'done' || status === 'error'
+      ? 'width 300ms ease-in-out'
+      : realWidth !== null
+        ? 'width 200ms linear'
+        : 'width 8s cubic-bezier(0.05, 0.6, 0.3, 1)';
 
   const barColor = status === 'error' ? 'bg-destructive' : 'bg-primary';
 
@@ -53,7 +52,9 @@ export function UploadToast({ status, fileName, onCancel, progress, errorMessage
       <div className="flex items-center gap-3">
         {status === 'done' && <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />}
         {status === 'error' && <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />}
-        {status === 'uploading' && <Upload className="h-5 w-5 shrink-0 animate-pulse text-muted-foreground" />}
+        {status === 'uploading' && (
+          <Upload className="h-5 w-5 shrink-0 animate-pulse text-muted-foreground" />
+        )}
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium" title={fileName}>

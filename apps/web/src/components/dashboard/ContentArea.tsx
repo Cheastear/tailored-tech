@@ -13,10 +13,7 @@ export function ContentArea() {
     { skip: !spaceId },
   );
 
-  const filesQuery = useGetFilesQuery(
-    { spaceId: spaceId!, folderId },
-    { skip: !spaceId },
-  );
+  const filesQuery = useGetFilesQuery({ spaceId: spaceId!, folderId }, { skip: !spaceId });
 
   if (!spaceId) {
     return (

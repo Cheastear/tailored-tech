@@ -45,7 +45,10 @@ export const authApi = createApi({
       },
     }),
 
-    updateProfile: builder.mutation<User, { name?: string; currentPassword?: string; newPassword?: string }>({
+    updateProfile: builder.mutation<
+      User,
+      { name?: string; currentPassword?: string; newPassword?: string }
+    >({
       query: (body) => ({ url: '/auth/me', method: 'PATCH', body }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         const { data } = await queryFulfilled;

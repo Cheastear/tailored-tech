@@ -11,18 +11,9 @@ export function SpaceStats() {
 
   return (
     <div className="grid grid-cols-3 gap-4">
-      <StatCard
-        label="Total files"
-        value={space ? String(space._count.files) : '—'}
-      />
-      <StatCard
-        label="Storage used"
-        value={space ? formatBytes(space.totalSize) : '—'}
-      />
-      <StatCard
-        label="Members"
-        value={memberCount !== null ? String(memberCount) : '—'}
-      />
+      <StatCard label="Total files" value={space ? String(space._count.files) : '—'} />
+      <StatCard label="Storage used" value={space ? formatBytes(space.totalSize) : '—'} />
+      <StatCard label="Members" value={memberCount !== null ? String(memberCount) : '—'} />
     </div>
   );
 }

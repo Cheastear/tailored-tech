@@ -47,7 +47,10 @@ export function FilesCard() {
 
         // mutation is assigned before user can interact — safe to reference in cancel
         let mutation: ReturnType<typeof upload>;
-        const cancel = () => { mutation.abort(); toast.dismiss(toastId); };
+        const cancel = () => {
+          mutation.abort();
+          toast.dismiss(toastId);
+        };
 
         const onProgress = (loaded: number, total: number) => {
           const now = Date.now();
@@ -64,7 +67,14 @@ export function FilesCard() {
           if (now - lastToastUpdate >= 100) {
             lastToastUpdate = now;
             toast.custom(
-              () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
+              () => (
+                <UploadToast
+                  status="uploading"
+                  fileName={file.name}
+                  onCancel={cancel}
+                  progress={progress}
+                />
+              ),
               { id: toastId, duration: Infinity },
             );
           }
@@ -73,16 +83,23 @@ export function FilesCard() {
         mutation = upload({ spaceId, folderId, files: [file], onProgress });
 
         toastId = toast.custom(
-          () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
+          () => (
+            <UploadToast
+              status="uploading"
+              fileName={file.name}
+              onCancel={cancel}
+              progress={progress}
+            />
+          ),
           { duration: Infinity },
         );
 
         try {
           await mutation.unwrap();
-          toast.custom(
-            () => <UploadToast status="done" fileName={file.name} />,
-            { id: toastId, duration: 2500 },
-          );
+          toast.custom(() => <UploadToast status="done" fileName={file.name} />, {
+            id: toastId,
+            duration: 2500,
+          });
         } catch (err: unknown) {
           const isAbort = (err as any)?.error === 'Aborted';
           if (isAbort) {

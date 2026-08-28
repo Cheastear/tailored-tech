@@ -61,7 +61,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <NavigationContext.Provider value={{ spaceId, folderId, folderPath, activeView, setActiveView, setSpace, enterFolder, navigateTo }}>
+    <NavigationContext.Provider
+      value={{
+        spaceId,
+        folderId,
+        folderPath,
+        activeView,
+        setActiveView,
+        setSpace,
+        enterFolder,
+        navigateTo,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );

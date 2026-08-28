@@ -60,7 +60,12 @@ export function RegisterPage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="Min 8 characters" {...field('password')} />
+          <Input
+            id="password"
+            type="password"
+            placeholder="Min 8 characters"
+            {...field('password')}
+          />
           {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
         </div>
 

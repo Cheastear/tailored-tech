@@ -15,7 +15,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigation } from '@/context/NavigationContext';
-import { useGetSpaceQuery, useRenameSpaceMutation, useDeleteSpaceMutation } from '@/store/spacesApi';
+import {
+  useGetSpaceQuery,
+  useRenameSpaceMutation,
+  useDeleteSpaceMutation,
+} from '@/store/spacesApi';
 import { useGetMeQuery } from '@/store/authApi';
 
 const DELETE_PHRASE = 'delete my space';
@@ -124,7 +128,12 @@ export function SettingsView() {
         )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!isDeleting) setDialogOpen(open); }}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          if (!isDeleting) setDialogOpen(open);
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete space</DialogTitle>
@@ -137,7 +146,9 @@ export function SettingsView() {
           <div className="space-y-2">
             <Label htmlFor="delete-confirm">
               Type{' '}
-              <span className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{DELETE_PHRASE}</span>{' '}
+              <span className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                {DELETE_PHRASE}
+              </span>{' '}
               to confirm
             </Label>
             <Input
@@ -155,7 +166,11 @@ export function SettingsView() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isDeleting}>
               Cancel
             </Button>
-            <Button variant="destructive" disabled={!canDelete || isDeleting} onClick={handleDelete}>
+            <Button
+              variant="destructive"
+              disabled={!canDelete || isDeleting}
+              onClick={handleDelete}
+            >
               {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
               Delete space
             </Button>

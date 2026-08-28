@@ -56,7 +56,10 @@ export const spacesApi = createApi({
       invalidatesTags: ['Space'],
     }),
 
-    addMember: builder.mutation<SpaceMember, { spaceId: string; email: string; role: 'READER' | 'WRITER' }>({
+    addMember: builder.mutation<
+      SpaceMember,
+      { spaceId: string; email: string; role: 'READER' | 'WRITER' }
+    >({
       query: ({ spaceId, email, role }) => ({
         url: `/spaces/${spaceId}/members`,
         method: 'POST',

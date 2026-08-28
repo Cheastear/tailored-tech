@@ -8,7 +8,9 @@ export function EmptyFiles() {
         <FolderOpen className="h-6 w-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium">No files yet</p>
-      <p className="mt-1 text-xs text-muted-foreground">Upload files to this space to get started</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Upload files to this space to get started
+      </p>
       <Button size="sm" className="mt-4 gap-1.5">
         <Upload className="h-4 w-4" />
         Upload files

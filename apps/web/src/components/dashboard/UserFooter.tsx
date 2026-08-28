@@ -8,7 +8,13 @@ import { useGetMeQuery, useLogoutMutation } from '@/store/authApi';
 import { UserProfileDialog } from './UserProfileDialog';
 
 function getInitials(name?: string | null, email?: string | null) {
-  if (name) return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  if (name)
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   return email?.[0]?.toUpperCase() ?? '?';
 }
 

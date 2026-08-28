@@ -35,7 +35,9 @@ export class FilesController {
   }
 
   @Post()
-  @UseInterceptors(AnyFilesInterceptor({ storage: memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } }))
+  @UseInterceptors(
+    AnyFilesInterceptor({ storage: memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } }),
+  )
   upload(
     @Param('spaceId') spaceId: string,
     @CurrentUser() user: User,
