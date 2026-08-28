@@ -34,6 +34,24 @@ export class FoldersService {
     return this.prisma.folder.create({ data: { name, spaceId, parentId } });
   }
 
+  async rename(id: string, spaceId: string, userId: string, name: string) {
+    await this.spaces.assertWriteAccess(spaceId, userId);
+
+    const folder = await this.prisma.folder.findFirst({ where: { id, spaceId } });
+    if (!folder) throw new NotFoundException('Folder not found');
+
+    const conflict = await this.prisma.folder.findFirst({
+      where: { spaceId, parentId: folder.parentId, name, id: { not: id } },
+    });
+    if (conflict) throw new BadRequestException('A folder with that name already exists here');
+
+    return this.prisma.folder.update({
+      where: { id },
+      data: { name },
+      include: { _count: { select: { children: true, files: true } } },
+    });
+  }
+
   async getAncestors(spaceId: string, userId: string, folderId: string) {
     await this.spaces.assertReadAccess(spaceId, userId);
     const path: { id: string; name: string }[] = [];
@@ -46,6 +64,13 @@ export class FoldersService {
     return path;
   }
 
+  async getStats(id: string, spaceId: string, userId: string) {
+    await this.spaces.assertReadAccess(spaceId, userId);
+    const folder = await this.prisma.folder.findFirst({ where: { id, spaceId } });
+    if (!folder) throw new NotFoundException('Folder not found');
+    return this.getTreeStats(id);
+  }
+
   async move(id: string, spaceId: string, userId: string, parentId: string | null) {
     await this.spaces.assertWriteAccess(spaceId, userId);
     if (id === parentId) throw new BadRequestException('Cannot move a folder into itself');
@@ -56,7 +81,6 @@ export class FoldersService {
     if (parentId) {
       const target = await this.prisma.folder.findFirst({ where: { id: parentId, spaceId } });
       if (!target) throw new NotFoundException('Target folder not found');
-      // Prevent moving into a descendant
       let cur = target;
       while (cur.parentId) {
         if (cur.parentId === id)
@@ -85,6 +109,23 @@ export class FoldersService {
     }
 
     await this.prisma.folder.delete({ where: { id } });
+  }
+
+  async getTreeStats(folderId: string): Promise<{ fileCount: number; folderCount: number }> {
+    const [fileCount, children] = await Promise.all([
+      this.prisma.file.count({ where: { folderId } }),
+      this.prisma.folder.findMany({ where: { parentId: folderId }, select: { id: true } }),
+    ]);
+
+    const childStats = await Promise.all(children.map((c) => this.getTreeStats(c.id)));
+
+    return childStats.reduce(
+      (acc, s) => ({
+        fileCount: acc.fileCount + s.fileCount,
+        folderCount: acc.folderCount + s.folderCount + 1,
+      }),
+      { fileCount, folderCount: 0 },
+    );
   }
 
   private async getAllFilesInTree(folderId: string): Promise<{ url: string }[]> {

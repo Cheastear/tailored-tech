@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Space, SpaceDetail, SpaceMember } from '@/types/space';
 import type { Folder } from '@/types/folder';
 import type { SpaceFile } from '@/types/file';
+import type { Share } from '@/types/share';
 import { apiBase } from '@/lib/api';
 
 type UploadArgs = {
@@ -14,7 +15,7 @@ type UploadArgs = {
 export const spacesApi = createApi({
   reducerPath: 'spacesApi',
   baseQuery: fetchBaseQuery({ baseUrl: apiBase, credentials: 'include' }),
-  tagTypes: ['Space', 'Folder', 'File'],
+  tagTypes: ['Space', 'Folder', 'File', 'Share'],
   endpoints: (builder) => ({
     getSpaces: builder.query<Space[], void>({
       query: () => '/spaces',
@@ -133,6 +134,56 @@ export const spacesApi = createApi({
       invalidatesTags: ['Folder', 'File', 'Space'],
     }),
 
+    renameFolder: builder.mutation<Folder, { spaceId: string; folderId: string; name: string }>({
+      query: ({ spaceId, folderId, name }) => ({
+        url: `/spaces/${spaceId}/folders/${folderId}`,
+        method: 'PATCH',
+        body: { name },
+      }),
+      invalidatesTags: ['Folder'],
+    }),
+
+    renameFile: builder.mutation<SpaceFile, { spaceId: string; fileId: string; name: string }>({
+      query: ({ spaceId, fileId, name }) => ({
+        url: `/spaces/${spaceId}/files/${fileId}`,
+        method: 'PATCH',
+        body: { name },
+      }),
+      invalidatesTags: ['File'],
+    }),
+
+    getFolderStats: builder.query<
+      { fileCount: number; folderCount: number },
+      { spaceId: string; folderId: string }
+    >({
+      query: ({ spaceId, folderId }) => `/spaces/${spaceId}/folders/${folderId}/stats`,
+    }),
+
+    getSharesForSpace: builder.query<Share[], string>({
+      query: (spaceId) => `/shares/spaces/${spaceId}`,
+      providesTags: ['Share'],
+    }),
+
+    createShare: builder.mutation<
+      Share,
+      {
+        mode: 'PUBLIC' | 'PERMISSIONED';
+        resourceType: 'SPACE' | 'FOLDER' | 'FILE';
+        spaceId?: string;
+        folderId?: string;
+        fileId?: string;
+        allowedEmails?: string[];
+      }
+    >({
+      query: (body) => ({ url: '/shares', method: 'POST', body }),
+      invalidatesTags: ['Share'],
+    }),
+
+    revokeShare: builder.mutation<void, string>({
+      query: (id) => ({ url: `/shares/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Share'],
+    }),
+
     uploadFiles: builder.mutation<SpaceFile[], UploadArgs>({
       queryFn: ({ spaceId, folderId, files, onProgress }, { signal }) =>
         new Promise((resolve) => {
@@ -183,5 +234,11 @@ export const {
   useDeleteFileMutation,
   useMoveFolderMutation,
   useDeleteFolderMutation,
+  useRenameFolderMutation,
+  useRenameFileMutation,
+  useGetFolderStatsQuery,
+  useGetSharesForSpaceQuery,
+  useCreateShareMutation,
+  useRevokeShareMutation,
   useUploadFilesMutation,
 } = spacesApi;

@@ -14,6 +14,7 @@ import { User } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateFolderDto } from './dto/create-folder.dto';
+import { RenameFolderDto } from './dto/rename-folder.dto';
 import { FoldersService } from './folders.service';
 
 @Controller('spaces/:spaceId/folders')
@@ -46,6 +47,25 @@ export class FoldersController {
     @CurrentUser() user: User,
   ) {
     return this.folders.getAncestors(spaceId, user.id, id);
+  }
+
+  @Get(':id/stats')
+  getStats(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.folders.getStats(id, spaceId, user.id);
+  }
+
+  @Patch(':id')
+  rename(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() dto: RenameFolderDto,
+  ) {
+    return this.folders.rename(id, spaceId, user.id, dto.name);
   }
 
   @Patch(':id/move')

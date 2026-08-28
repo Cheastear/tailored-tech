@@ -22,7 +22,8 @@ export class FilesService {
 
     return Promise.all(
       files.map(async (file) => {
-        const blob = await put(`spaces/${spaceId}/${file.originalname}`, file.buffer, {
+        const name = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        const blob = await put(`spaces/${spaceId}/${name}`, file.buffer, {
           access: 'private',
           contentType: file.mimetype,
           addRandomSuffix: true,
@@ -30,7 +31,7 @@ export class FilesService {
 
         return this.prisma.file.create({
           data: {
-            name: file.originalname,
+            name,
             url: blob.url,
             size: file.size,
             mimeType: file.mimetype,
@@ -73,6 +74,36 @@ export class FilesService {
     return { stream: Readable.fromWeb(response.body as any), file };
   }
 
+  async rename(id: string, spaceId: string, userId: string, name: string) {
+    await this.spaces.assertWriteAccess(spaceId, userId);
+
+    const file = await this.prisma.file.findFirst({ where: { id, spaceId } });
+    if (!file) throw new NotFoundException('File not found');
+
+    // Auto-suffix on sibling name conflict
+    const siblings = await this.prisma.file.findMany({
+      where: { spaceId, folderId: file.folderId, id: { not: id } },
+      select: { name: true },
+    });
+    const siblingNames = new Set(siblings.map((s) => s.name));
+
+    let finalName = name;
+    if (siblingNames.has(name)) {
+      const dot = name.lastIndexOf('.');
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : '';
+      let i = 1;
+      while (i <= 999 && siblingNames.has(`${base} (${i})${ext}`)) i++;
+      finalName = `${base} (${i})${ext}`;
+    }
+
+    return this.prisma.file.update({
+      where: { id },
+      data: { name: finalName },
+      include: { uploadedBy: { select: { id: true, email: true, name: true } } },
+    });
+  }
+
   async move(id: string, spaceId: string, userId: string, folderId: string | null) {
     await this.spaces.assertWriteAccess(spaceId, userId);
     const file = await this.prisma.file.findFirst({ where: { id, spaceId } });
@@ -96,5 +127,13 @@ export class FilesService {
 
     await del(file.url);
     await this.prisma.file.delete({ where: { id } });
+  }
+
+  async streamFromBlob(url: string) {
+    const response = await fetch(url, {
+      headers: { authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+    });
+    if (!response.ok) throw new NotFoundException('File not available in storage');
+    return Readable.fromWeb(response.body as any);
   }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import {
   useDeleteSpaceMutation,
 } from '@/store/spacesApi';
 import { useGetMeQuery } from '@/store/authApi';
+import { ShareDialog } from './ShareDialog';
 
 const DELETE_PHRASE = 'delete my space';
 
@@ -37,6 +38,7 @@ export function SettingsView() {
   const [deleteInput, setDeleteInput] = useState('');
 
   const isOwner = space?.ownerId === me?.id;
+  const [shareOpen, setShareOpen] = useState(false);
   const canDelete = deleteInput === DELETE_PHRASE;
   const nameChanged = nameInput.trim() !== space?.name;
 
@@ -110,6 +112,23 @@ export function SettingsView() {
         </Card>
 
         {isOwner && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Share this space</CardTitle>
+              <CardDescription>
+                Create a public or restricted link to share this space with others.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-end">
+              <Button variant="outline" onClick={() => setShareOpen(true)}>
+                <Share2 className="h-4 w-4" />
+                Manage share links
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {isOwner && (
           <Card className="border-destructive/40">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-destructive">Danger zone</CardTitle>
@@ -127,6 +146,16 @@ export function SettingsView() {
           </Card>
         )}
       </div>
+
+      {isOwner && spaceId && (
+        <ShareDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          resourceType="SPACE"
+          resourceId={spaceId}
+          spaceId={spaceId}
+        />
+      )}
 
       <Dialog
         open={dialogOpen}

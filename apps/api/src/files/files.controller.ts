@@ -20,6 +20,7 @@ import { memoryStorage } from 'multer';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RenameFileDto } from './dto/rename-file.dto';
 import { FilesService } from './files.service';
 
 @Controller('spaces/:spaceId/files')
@@ -54,14 +55,26 @@ export class FilesController {
     @Param('spaceId') spaceId: string,
     @Param('id') id: string,
     @CurrentUser() user: User,
+    @Query('inline') inline: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { stream, file } = await this.files.download(id, spaceId, user.id);
 
     res.setHeader('Content-Type', file.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+    const disposition = inline === 'true' ? 'inline' : 'attachment';
+    res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(file.name)}"`);
 
     return new StreamableFile(stream);
+  }
+
+  @Patch(':id')
+  rename(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() dto: RenameFileDto,
+  ) {
+    return this.files.rename(id, spaceId, user.id, dto.name);
   }
 
   @Patch(':id/move')

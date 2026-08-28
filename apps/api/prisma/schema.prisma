@@ -13,6 +13,17 @@ enum SpaceRole {
   READER
 }
 
+enum ShareMode {
+  PUBLIC
+  PERMISSIONED
+}
+
+enum ShareResourceType {
+  SPACE
+  FOLDER
+  FILE
+}
+
 model User {
   id               String        @id @default(cuid())
   email            String        @unique
@@ -25,6 +36,7 @@ model User {
   ownedSpaces      Space[]       @relation("OwnedSpaces")
   spaceMemberships SpaceMember[]
   uploadedFiles    File[]        @relation("UploadedFiles")
+  createdShares    Share[]       @relation("CreatedShares")
 }
 
 model Space {
@@ -35,6 +47,7 @@ model Space {
   members   SpaceMember[]
   folders   Folder[]
   files     File[]
+  shares    Share[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
@@ -60,6 +73,7 @@ model Folder {
   parent    Folder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
   children  Folder[] @relation("FolderChildren")
   files     File[]
+  shares    Share[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -76,5 +90,24 @@ model File {
   folder       Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
   uploadedById String
   uploadedBy   User     @relation("UploadedFiles", fields: [uploadedById], references: [id])
+  shares       Share[]
   createdAt    DateTime @default(now())
+}
+
+model Share {
+  id            String            @id @default(cuid())
+  token         String            @unique @default(cuid())
+  mode          ShareMode
+  resourceType  ShareResourceType
+  spaceId       String?
+  space         Space?            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  folderId      String?
+  folder        Folder?           @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  fileId        String?
+  file          File?             @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  createdById   String
+  createdBy     User              @relation("CreatedShares", fields: [createdById], references: [id])
+  allowedEmails String[]
+  revokedAt     DateTime?
+  createdAt     DateTime          @default(now())
 }
