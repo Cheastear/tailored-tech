@@ -10,9 +10,11 @@ type UploadArgs = {
   onProgress?: (loaded: number, total: number) => void;
 };
 
+const apiBase = `${import.meta.env.VITE_API_URL ?? ''}/api`;
+
 export const spacesApi = createApi({
   reducerPath: 'spacesApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: apiBase, credentials: 'include' }),
   tagTypes: ['Space', 'Folder', 'File'],
   endpoints: (builder) => ({
     getSpaces: builder.query<Space[], void>({

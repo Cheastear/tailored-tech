@@ -19,7 +19,7 @@ interface FileItemProps {
 }
 
 export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
-  const downloadUrl = `/api/spaces/${file.spaceId}/files/${file.id}/download`;
+  const downloadUrl = `${import.meta.env.VITE_API_URL ?? ''}/api/spaces/${file.spaceId}/files/${file.id}/download`;
 
   const handleDragStart = (e: React.DragEvent) => {
     const item: DragItem = { kind: 'file', id: file.id, name: file.name };

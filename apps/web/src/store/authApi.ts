@@ -13,9 +13,11 @@ interface RegisterRequest {
   name?: string;
 }
 
+const apiBase = `${import.meta.env.VITE_API_URL ?? ''}/api`;
+
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/api', credentials: 'include' }),
+  baseQuery: fetchBaseQuery({ baseUrl: apiBase, credentials: 'include' }),
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
       query: () => '/auth/me',
