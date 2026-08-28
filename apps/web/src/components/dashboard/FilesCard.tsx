@@ -24,20 +24,25 @@ export function FilesCard() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
+  const isFileDrop = (e: React.DragEvent) =>
+    e.dataTransfer.types.includes('Files') && !e.dataTransfer.types.includes('application/x-drag-item');
+
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!spaceId || !canWrite) return;
+    if (!spaceId || !canWrite || !isFileDrop(e)) return;
     dragCounter.current++;
     if (dragCounter.current === 1) setDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!isFileDrop(e)) return;
     dragCounter.current--;
     if (dragCounter.current === 0) setDragging(false);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
+    if (!isFileDrop(e)) return;
     e.preventDefault();
     dragCounter.current = 0;
     setDragging(false);

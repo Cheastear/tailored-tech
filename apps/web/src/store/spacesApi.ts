@@ -89,6 +89,40 @@ export const spacesApi = createApi({
       invalidatesTags: (_r, _e, { spaceId }) => [{ type: 'Space', id: spaceId }],
     }),
 
+    moveFile: builder.mutation<SpaceFile, { spaceId: string; fileId: string; folderId: string | null }>({
+      query: ({ spaceId, fileId, folderId }) => ({
+        url: `/spaces/${spaceId}/files/${fileId}/move`,
+        method: 'PATCH',
+        body: { folderId },
+      }),
+      invalidatesTags: ['File'],
+    }),
+
+    deleteFile: builder.mutation<void, { spaceId: string; fileId: string }>({
+      query: ({ spaceId, fileId }) => ({
+        url: `/spaces/${spaceId}/files/${fileId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['File', 'Space'],
+    }),
+
+    moveFolder: builder.mutation<Folder, { spaceId: string; folderId: string; parentId: string | null }>({
+      query: ({ spaceId, folderId, parentId }) => ({
+        url: `/spaces/${spaceId}/folders/${folderId}/move`,
+        method: 'PATCH',
+        body: { parentId },
+      }),
+      invalidatesTags: ['Folder'],
+    }),
+
+    deleteFolder: builder.mutation<void, { spaceId: string; folderId: string }>({
+      query: ({ spaceId, folderId }) => ({
+        url: `/spaces/${spaceId}/folders/${folderId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Folder', 'File', 'Space'],
+    }),
+
     uploadFiles: builder.mutation<SpaceFile[], UploadArgs>({
       queryFn: ({ spaceId, folderId, files, onProgress }, { signal }) =>
         new Promise((resolve) => {
@@ -135,5 +169,9 @@ export const {
   useGetFolderAncestorsQuery,
   useCreateFolderMutation,
   useGetFilesQuery,
+  useMoveFileMutation,
+  useDeleteFileMutation,
+  useMoveFolderMutation,
+  useDeleteFolderMutation,
   useUploadFilesMutation,
 } = spacesApi;

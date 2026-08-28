@@ -73,6 +73,21 @@ export class FilesService {
     return { stream: Readable.fromWeb(response.body as any), file };
   }
 
+  async move(id: string, spaceId: string, userId: string, folderId: string | null) {
+    await this.spaces.assertWriteAccess(spaceId, userId);
+    const file = await this.prisma.file.findFirst({ where: { id, spaceId } });
+    if (!file) throw new NotFoundException('File not found');
+    if (folderId) {
+      const folder = await this.prisma.folder.findFirst({ where: { id: folderId, spaceId } });
+      if (!folder) throw new NotFoundException('Folder not found');
+    }
+    return this.prisma.file.update({
+      where: { id },
+      data: { folderId },
+      include: { uploadedBy: { select: { id: true, email: true, name: true } } },
+    });
+  }
+
   async remove(id: string, spaceId: string, userId: string) {
     await this.spaces.assertWriteAccess(spaceId, userId);
 

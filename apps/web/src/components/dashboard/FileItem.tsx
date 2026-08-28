@@ -1,6 +1,7 @@
 import { Download, File, FileImage, FileText, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/lib/format';
+import { setDragItem, type DragItem } from '@/lib/dnd';
 import type { SpaceFile } from '@/types/file';
 
 function FileIcon({ mimeType }: { mimeType: string }) {
@@ -13,13 +14,26 @@ function FileIcon({ mimeType }: { mimeType: string }) {
 
 interface FileItemProps {
   file: SpaceFile;
+  onDragStart: (item: DragItem) => void;
+  onDragEnd: () => void;
 }
 
-export function FileItem({ file }: FileItemProps) {
+export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
   const downloadUrl = `/api/spaces/${file.spaceId}/files/${file.id}/download`;
 
+  const handleDragStart = (e: React.DragEvent) => {
+    const item: DragItem = { kind: 'file', id: file.id, name: file.name };
+    setDragItem(e, item);
+    onDragStart(item);
+  };
+
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3">
+    <div
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={onDragEnd}
+      className="flex cursor-grab items-center gap-3 rounded-lg border bg-card px-4 py-3 active:cursor-grabbing active:opacity-60"
+    >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
         <FileIcon mimeType={file.mimeType} />
       </div>
@@ -31,7 +45,13 @@ export function FileItem({ file }: FileItemProps) {
         </p>
       </div>
 
-      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 shrink-0"
+        asChild
+        onClick={(e) => e.stopPropagation()}
+      >
         <a href={downloadUrl} download={file.name} title="Download">
           <Download className="h-4 w-4" />
         </a>

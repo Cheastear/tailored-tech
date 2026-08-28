@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -60,6 +62,16 @@ export class FilesController {
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
 
     return new StreamableFile(stream);
+  }
+
+  @Patch(':id/move')
+  move(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() body: { folderId: string | null },
+  ) {
+    return this.files.move(id, spaceId, user.id, body.folderId);
   }
 
   @Delete(':id')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { del } from '@vercel/blob';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -44,6 +44,31 @@ export class FoldersService {
       current = await this.prisma.folder.findFirst({ where: { id: current.parentId, spaceId } });
     }
     return path;
+  }
+
+  async move(id: string, spaceId: string, userId: string, parentId: string | null) {
+    await this.spaces.assertWriteAccess(spaceId, userId);
+    if (id === parentId) throw new BadRequestException('Cannot move a folder into itself');
+
+    const folder = await this.prisma.folder.findFirst({ where: { id, spaceId } });
+    if (!folder) throw new NotFoundException('Folder not found');
+
+    if (parentId) {
+      const target = await this.prisma.folder.findFirst({ where: { id: parentId, spaceId } });
+      if (!target) throw new NotFoundException('Target folder not found');
+      // Prevent moving into a descendant
+      let cur = target;
+      while (cur.parentId) {
+        if (cur.parentId === id) throw new BadRequestException('Cannot move a folder into its own descendant');
+        cur = await this.prisma.folder.findFirst({ where: { id: cur.parentId } });
+      }
+    }
+
+    return this.prisma.folder.update({
+      where: { id },
+      data: { parentId },
+      include: { _count: { select: { children: true, files: true } } },
+    });
   }
 
   async remove(id: string, spaceId: string, userId: string) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -36,6 +36,16 @@ export class FoldersController {
     @CurrentUser() user: User,
   ) {
     return this.folders.getAncestors(spaceId, user.id, id);
+  }
+
+  @Patch(':id/move')
+  move(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() body: { parentId: string | null },
+  ) {
+    return this.folders.move(id, spaceId, user.id, body.parentId);
   }
 
   @Delete(':id')
