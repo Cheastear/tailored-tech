@@ -4,12 +4,14 @@ import { Readable } from 'stream';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { SpacesService } from '../spaces/spaces.service';
+import { SyncService } from '../sync/sync.service';
 
 @Injectable()
 export class FilesService {
   constructor(
     private prisma: PrismaService,
     private spaces: SpacesService,
+    private sync: SyncService,
   ) {}
 
   async upload(spaceId: string, userId: string, files: Express.Multer.File[], folderId?: string) {
@@ -29,7 +31,7 @@ export class FilesService {
           addRandomSuffix: true,
         });
 
-        return this.prisma.file.create({
+        const record = await this.prisma.file.create({
           data: {
             name,
             url: blob.url,
@@ -43,6 +45,8 @@ export class FilesService {
             uploadedBy: { select: { id: true, email: true, name: true } },
           },
         });
+        this.sync.emitToSpace(spaceId, 'file.created');
+        return record;
       }),
     );
   }
@@ -97,11 +101,13 @@ export class FilesService {
       finalName = `${base} (${i})${ext}`;
     }
 
-    return this.prisma.file.update({
+    const updated = await this.prisma.file.update({
       where: { id },
       data: { name: finalName },
       include: { uploadedBy: { select: { id: true, email: true, name: true } } },
     });
+    this.sync.emitToSpace(spaceId, 'file.renamed');
+    return updated;
   }
 
   async move(id: string, spaceId: string, userId: string, folderId: string | null) {
@@ -112,11 +118,13 @@ export class FilesService {
       const folder = await this.prisma.folder.findFirst({ where: { id: folderId, spaceId } });
       if (!folder) throw new NotFoundException('Folder not found');
     }
-    return this.prisma.file.update({
+    const moved = await this.prisma.file.update({
       where: { id },
       data: { folderId },
       include: { uploadedBy: { select: { id: true, email: true, name: true } } },
     });
+    this.sync.emitToSpace(spaceId, 'file.moved');
+    return moved;
   }
 
   async remove(id: string, spaceId: string, userId: string) {
@@ -127,6 +135,7 @@ export class FilesService {
 
     await del(file.url);
     await this.prisma.file.delete({ where: { id } });
+    this.sync.emitToSpace(spaceId, 'file.deleted');
   }
 
   async streamFromBlob(url: string) {

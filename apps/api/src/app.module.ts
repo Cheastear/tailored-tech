@@ -9,6 +9,7 @@ import { FoldersModule } from './folders/folders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SharesModule } from './shares/shares.module';
 import { SpacesModule } from './spaces/spaces.module';
+import { SyncModule } from './sync/sync.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     FoldersModule,
     FilesModule,
     SharesModule,
+    SyncModule,
   ],
   controllers: [AppController],
   providers: [AppService],

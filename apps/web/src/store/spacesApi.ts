@@ -103,7 +103,7 @@ export const spacesApi = createApi({
         method: 'PATCH',
         body: { folderId },
       }),
-      invalidatesTags: ['File'],
+      invalidatesTags: ['File', 'Folder'],
     }),
 
     deleteFile: builder.mutation<void, { spaceId: string; fileId: string }>({
@@ -111,7 +111,7 @@ export const spacesApi = createApi({
         url: `/spaces/${spaceId}/files/${fileId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['File', 'Space'],
+      invalidatesTags: ['File', 'Folder', 'Space'],
     }),
 
     moveFolder: builder.mutation<
@@ -123,7 +123,7 @@ export const spacesApi = createApi({
         method: 'PATCH',
         body: { parentId },
       }),
-      invalidatesTags: ['Folder'],
+      invalidatesTags: ['Folder', 'File'],
     }),
 
     deleteFolder: builder.mutation<void, { spaceId: string; folderId: string }>({
@@ -213,7 +213,7 @@ export const spacesApi = createApi({
 
           xhr.send(formData);
         }),
-      invalidatesTags: ['File', 'Space'],
+      invalidatesTags: ['File', 'Folder', 'Space'],
     }),
   }),
 });

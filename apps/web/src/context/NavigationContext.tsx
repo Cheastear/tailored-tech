@@ -17,6 +17,7 @@ interface NavigationContextValue {
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
   setSpace: (space: Space) => void;
+  clearSpace: () => void;
   enterFolder: (folder: NavFolder) => void;
   navigateTo: (index: number) => void;
 }
@@ -54,6 +55,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     [setSearchParams],
   );
 
+  const clearSpace = useCallback(() => {
+    setFolderPath([]);
+    setActiveView('files');
+    setSearchParams({});
+  }, [setSearchParams]);
+
   const enterFolder = useCallback(
     (folder: NavFolder) => {
       setFolderPath((prev) => [...prev, folder]);
@@ -85,6 +92,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         activeView,
         setActiveView,
         setSpace,
+        clearSpace,
         enterFolder,
         navigateTo,
       }}

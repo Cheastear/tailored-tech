@@ -3,12 +3,14 @@ import { del } from '@vercel/blob';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { SpacesService } from '../spaces/spaces.service';
+import { SyncService } from '../sync/sync.service';
 
 @Injectable()
 export class FoldersService {
   constructor(
     private prisma: PrismaService,
     private spaces: SpacesService,
+    private sync: SyncService,
   ) {}
 
   async findAll(spaceId: string, userId: string, parentId?: string) {
@@ -31,7 +33,9 @@ export class FoldersService {
       if (!parent) throw new NotFoundException('Parent folder not found');
     }
 
-    return this.prisma.folder.create({ data: { name, spaceId, parentId } });
+    const folder = await this.prisma.folder.create({ data: { name, spaceId, parentId } });
+    this.sync.emitToSpace(spaceId, 'folder.created');
+    return folder;
   }
 
   async rename(id: string, spaceId: string, userId: string, name: string) {
@@ -45,11 +49,13 @@ export class FoldersService {
     });
     if (conflict) throw new BadRequestException('A folder with that name already exists here');
 
-    return this.prisma.folder.update({
+    const renamed = await this.prisma.folder.update({
       where: { id },
       data: { name },
       include: { _count: { select: { children: true, files: true } } },
     });
+    this.sync.emitToSpace(spaceId, 'folder.renamed');
+    return renamed;
   }
 
   async getAncestors(spaceId: string, userId: string, folderId: string) {
@@ -89,11 +95,13 @@ export class FoldersService {
       }
     }
 
-    return this.prisma.folder.update({
+    const moved = await this.prisma.folder.update({
       where: { id },
       data: { parentId },
       include: { _count: { select: { children: true, files: true } } },
     });
+    this.sync.emitToSpace(spaceId, 'folder.moved');
+    return moved;
   }
 
   async remove(id: string, spaceId: string, userId: string) {
@@ -109,6 +117,7 @@ export class FoldersService {
     }
 
     await this.prisma.folder.delete({ where: { id } });
+    this.sync.emitToSpace(spaceId, 'folder.deleted');
   }
 
   async getTreeStats(folderId: string): Promise<{ fileCount: number; folderCount: number }> {

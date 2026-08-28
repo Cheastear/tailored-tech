@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { FilesCard } from '@/components/dashboard/FilesCard';
 import { MembersView } from '@/components/dashboard/MembersView';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -7,9 +8,25 @@ import { SpacePickerView } from '@/components/dashboard/SpacePickerView';
 import { SpaceStats } from '@/components/dashboard/SpaceStats';
 import { useNavigation } from '@/context/NavigationContext';
 import { NavigationProvider } from '@/context/NavigationContext';
+import { useSpaceSync } from '@/hooks/useSpaceSync';
+import { useUserSync } from '@/hooks/useUserSync';
+import { useGetSpacesQuery } from '@/store/spacesApi';
 
 function DashboardContent() {
-  const { spaceId, activeView } = useNavigation();
+  const { spaceId, activeView, clearSpace } = useNavigation();
+  const { data: spaces } = useGetSpacesQuery();
+
+  useSpaceSync(spaceId);
+  useUserSync();
+
+  // If the current space is no longer accessible (e.g. user was removed),
+  // navigate back to the space picker.
+  useEffect(() => {
+    if (!spaceId || !spaces) return;
+    if (!spaces.find((s) => s.id === spaceId)) {
+      clearSpace();
+    }
+  }, [spaces, spaceId, clearSpace]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

@@ -2,10 +2,14 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { del } from '@vercel/blob';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { SyncService } from '../sync/sync.service';
 
 @Injectable()
 export class SpacesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private sync: SyncService,
+  ) {}
 
   async create(userId: string, name: string) {
     return this.prisma.space.create({
@@ -53,7 +57,9 @@ export class SpacesService {
   async rename(id: string, userId: string, name: string) {
     await this.assertOwnerAccess(id, userId);
 
-    return this.prisma.space.update({ where: { id }, data: { name } });
+    const space = await this.prisma.space.update({ where: { id }, data: { name } });
+    this.sync.emitToSpace(id, 'space.updated');
+    return space;
   }
 
   async remove(id: string, userId: string) {
@@ -79,7 +85,7 @@ export class SpacesService {
       throw new ForbiddenException('Cannot add the owner as a member');
     }
 
-    return this.prisma.spaceMember.upsert({
+    const member = await this.prisma.spaceMember.upsert({
       where: { spaceId_userId: { spaceId, userId: user.id } },
       create: { spaceId, userId: user.id, role },
       update: { role },
@@ -87,12 +93,17 @@ export class SpacesService {
         user: { select: { id: true, email: true, name: true, avatar: true } },
       },
     });
+    this.sync.emitToSpace(spaceId, 'space.updated');
+    this.sync.emitToUser(user.id, 'spaces.changed');
+    return member;
   }
 
   async removeMember(spaceId: string, requesterId: string, userId: string) {
     await this.assertOwnerAccess(spaceId, requesterId);
 
     await this.prisma.spaceMember.deleteMany({ where: { spaceId, userId } });
+    this.sync.emitToSpace(spaceId, 'space.updated');
+    this.sync.emitToUser(userId, 'spaces.changed');
   }
 
   async getRole(spaceId: string, userId: string): Promise<string | null> {
