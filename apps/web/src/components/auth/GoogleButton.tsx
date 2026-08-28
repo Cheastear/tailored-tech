@@ -7,7 +7,7 @@ interface GoogleButtonProps {
 export function GoogleButton({ label }: GoogleButtonProps) {
   return (
     <Button variant="outline" className="w-full" asChild>
-      <a href="/api/auth/google">
+      <a href={`${import.meta.env.VITE_API_URL ?? ''}/api/auth/google`}>
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path
             fill="#4285F4"

@@ -133,7 +133,7 @@ export const spacesApi = createApi({
           const params = folderId ? `?folderId=${folderId}` : '';
 
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `/api/spaces/${spaceId}/files${params}`);
+          xhr.open('POST', `${apiBase}/spaces/${spaceId}/files${params}`);
           xhr.withCredentials = true;
 
           if (onProgress) {
