@@ -20,7 +20,7 @@ export function ContentArea() {
 
   if (!spaceId) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+      <div className="flex min-h-32 items-center justify-center text-sm text-muted-foreground">
         Select a space to get started
       </div>
     );
@@ -30,7 +30,7 @@ export function ContentArea() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex min-h-32 items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );

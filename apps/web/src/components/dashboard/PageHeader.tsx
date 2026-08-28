@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Filter, Upload } from 'lucide-react';
 import {
   Breadcrumb,
@@ -12,10 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useNavigation } from '@/context/NavigationContext';
 import { useGetSpacesQuery } from '@/store/spacesApi';
+import { UploadModal } from './UploadModal';
 
 export function PageHeader() {
   const { spaceId, folderPath, navigateTo } = useNavigation();
   const { data: spaces = [] } = useGetSpacesQuery();
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const spaceName = spaces.find((s) => s.id === spaceId)?.name ?? '…';
 
@@ -65,11 +67,18 @@ export function PageHeader() {
           Filter
         </Button>
         <Separator orientation="vertical" className="h-5" />
-        <Button size="sm" className="gap-1.5">
+        <Button
+          size="sm"
+          className="gap-1.5"
+          disabled={!spaceId}
+          onClick={() => setUploadOpen(true)}
+        >
           <Upload className="h-4 w-4" />
           Upload
         </Button>
       </div>
+
+      <UploadModal open={uploadOpen} onOpenChange={setUploadOpen} />
     </header>
   );
 }
