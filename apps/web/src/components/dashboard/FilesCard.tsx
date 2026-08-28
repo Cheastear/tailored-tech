@@ -2,10 +2,11 @@ import { useRef, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { rejectOversized } from '@/lib/upload';
 import { useNavigation } from '@/context/NavigationContext';
 import { useUploadFilesMutation } from '@/store/spacesApi';
 import { ContentArea } from './ContentArea';
-import { UploadToast } from './UploadToast';
+import { UploadToast, type UploadProgress } from './UploadToast';
 
 export function FilesCard() {
   const { spaceId, folderId } = useNavigation();
@@ -32,22 +33,59 @@ export function FilesCard() {
     setDragging(false);
     if (!spaceId) return;
 
-    const files = Array.from(e.dataTransfer.files);
+    const { valid: files, rejected } = rejectOversized(Array.from(e.dataTransfer.files));
+    rejected.forEach((f) => toast.error(`${f.name} exceeds the 500 MB limit`));
     if (!files.length) return;
 
     await Promise.all(
       files.map(async (file) => {
-        const toastId = toast.custom(
-          () => <UploadToast status="uploading" fileName={file.name} />,
+        let toastId: string | number;
+        let progress: UploadProgress = { loaded: 0, total: file.size, speed: 0 };
+        let lastLoaded = 0;
+        let lastTick = Date.now();
+        let lastToastUpdate = 0;
+
+        // mutation is assigned before user can interact — safe to reference in cancel
+        let mutation: ReturnType<typeof upload>;
+        const cancel = () => { mutation.abort(); toast.dismiss(toastId); };
+
+        const onProgress = (loaded: number, total: number) => {
+          const now = Date.now();
+          const dt = (now - lastTick) / 1000;
+          if (dt >= 0.1) {
+            progress = { loaded, total, speed: (loaded - lastLoaded) / dt };
+            lastLoaded = loaded;
+            lastTick = now;
+          } else {
+            progress = { ...progress, loaded, total };
+          }
+
+          // throttle toast re-renders to ~10 fps
+          if (now - lastToastUpdate >= 100) {
+            lastToastUpdate = now;
+            toast.custom(
+              () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
+              { id: toastId, duration: Infinity },
+            );
+          }
+        };
+
+        mutation = upload({ spaceId, folderId, files: [file], onProgress });
+
+        toastId = toast.custom(
+          () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
           { duration: Infinity },
         );
 
-        await upload({ spaceId, folderId, files: [file] });
-
-        toast.custom(
-          () => <UploadToast status="done" fileName={file.name} />,
-          { id: toastId, duration: 2500 },
-        );
+        try {
+          await mutation.unwrap();
+          toast.custom(
+            () => <UploadToast status="done" fileName={file.name} />,
+            { id: toastId, duration: 2500 },
+          );
+        } catch {
+          toast.dismiss(toastId);
+        }
       }),
     );
   };

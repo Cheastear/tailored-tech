@@ -3,7 +3,12 @@ import type { Space, SpaceDetail } from '@/types/space';
 import type { Folder } from '@/types/folder';
 import type { SpaceFile } from '@/types/file';
 
-type UploadArgs = { spaceId: string; folderId?: string; files: File[] };
+type UploadArgs = {
+  spaceId: string;
+  folderId?: string;
+  files: File[];
+  onProgress?: (loaded: number, total: number) => void;
+};
 
 export const spacesApi = createApi({
   reducerPath: 'spacesApi',
@@ -42,18 +47,34 @@ export const spacesApi = createApi({
     }),
 
     uploadFiles: builder.mutation<SpaceFile[], UploadArgs>({
-      queryFn: async ({ spaceId, folderId, files }) => {
-        const formData = new FormData();
-        files.forEach((f) => formData.append('files', f));
-        const params = folderId ? `?folderId=${folderId}` : '';
-        const res = await fetch(`/api/spaces/${spaceId}/files${params}`, {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-        });
-        if (!res.ok) return { error: { status: res.status, data: await res.json() } };
-        return { data: await res.json() };
-      },
+      queryFn: ({ spaceId, folderId, files, onProgress }, { signal }) =>
+        new Promise((resolve) => {
+          const formData = new FormData();
+          files.forEach((f) => formData.append('files', f));
+          const params = folderId ? `?folderId=${folderId}` : '';
+
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `/api/spaces/${spaceId}/files${params}`);
+          xhr.withCredentials = true;
+
+          if (onProgress) {
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) onProgress(e.loaded, e.total);
+            };
+          }
+
+          signal?.addEventListener('abort', () => xhr.abort());
+
+          xhr.onload = () => {
+            const body = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300) resolve({ data: body });
+            else resolve({ error: { status: xhr.status, data: body } });
+          };
+          xhr.onerror = () => resolve({ error: { status: 'FETCH_ERROR', error: 'Network error' } });
+          xhr.onabort = () => resolve({ error: { status: 'FETCH_ERROR', error: 'Aborted' } });
+
+          xhr.send(formData);
+        }),
       invalidatesTags: ['File', 'Space'],
     }),
   }),

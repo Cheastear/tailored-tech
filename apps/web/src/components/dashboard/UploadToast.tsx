@@ -1,23 +1,50 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Upload } from 'lucide-react';
+import { CheckCircle2, Upload, X } from 'lucide-react';
+import { formatBytes } from '@/lib/format';
+
+export interface UploadProgress {
+  loaded: number;
+  total: number;
+  speed: number; // bytes/sec
+}
 
 interface Props {
   status: 'uploading' | 'done' | 'error';
   fileName: string;
+  onCancel?: () => void;
+  progress?: UploadProgress;
 }
 
-export function UploadToast({ status, fileName }: Props) {
-  const [width, setWidth] = useState(0);
+export function UploadToast({ status, fileName, onCancel, progress }: Props) {
+  const [simulatedWidth, setSimulatedWidth] = useState(0);
 
+  // Simulated animation only used when real progress isn't available
   useEffect(() => {
+    if (progress) return;
     if (status === 'uploading') {
-      const t = setTimeout(() => setWidth(75), 30);
+      const t = setTimeout(() => setSimulatedWidth(75), 30);
       return () => clearTimeout(t);
     }
     if (status === 'done' || status === 'error') {
-      setWidth(100);
+      setSimulatedWidth(100);
     }
-  }, [status]);
+  }, [status, progress]);
+
+  const realWidth = progress && progress.total > 0
+    ? (progress.loaded / progress.total) * 100
+    : null;
+
+  const isProcessing = status === 'uploading' && realWidth !== null && realWidth >= 100;
+
+  const barWidth = status === 'done' || isProcessing
+    ? 100
+    : (realWidth ?? simulatedWidth);
+
+  const barTransition = status === 'done'
+    ? 'width 300ms ease-in-out'
+    : realWidth !== null
+      ? 'width 200ms linear'
+      : 'width 8s cubic-bezier(0.05, 0.6, 0.3, 1)';
 
   return (
     <div className="relative w-72 overflow-hidden rounded-lg border bg-background px-4 py-3 shadow-lg">
@@ -27,20 +54,38 @@ export function UploadToast({ status, fileName }: Props) {
         ) : (
           <Upload className="h-5 w-5 shrink-0 animate-pulse text-muted-foreground" />
         )}
-        <p className="min-w-0 flex-1 truncate text-sm font-medium" title={fileName}>
-          {fileName}
-        </p>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium" title={fileName}>
+            {fileName}
+          </p>
+          {status === 'uploading' && progress && progress.total > 0 && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {progress.loaded >= progress.total ? (
+                'Processing…'
+              ) : (
+                <>
+                  {formatBytes(progress.loaded)} of {formatBytes(progress.total)}
+                  {progress.speed > 0 && <> · {formatBytes(Math.round(progress.speed))}/s</>}
+                </>
+              )}
+            </p>
+          )}
+        </div>
+
+        {status === 'uploading' && onCancel && (
+          <button
+            onClick={onCancel}
+            className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       <div
-        className="absolute bottom-0 left-0 h-0.5 bg-primary"
-        style={{
-          width: `${width}%`,
-          transition:
-            status === 'uploading'
-              ? 'width 8s cubic-bezier(0.05, 0.6, 0.3, 1)'
-              : 'width 300ms ease-in-out',
-        }}
+        className={`absolute bottom-0 left-0 h-0.5 bg-primary${isProcessing ? ' animate-pulse' : ''}`}
+        style={{ width: `${barWidth}%`, transition: barTransition }}
       />
     </div>
   );

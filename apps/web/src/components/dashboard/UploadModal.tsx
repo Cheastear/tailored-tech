@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Loader2, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { useNavigation } from '@/context/NavigationContext';
 import { formatBytes } from '@/lib/format';
+import { rejectOversized } from '@/lib/upload';
 import { useUploadFilesMutation } from '@/store/spacesApi';
 import { UploadDropzone } from './UploadDropzone';
 
@@ -24,9 +26,11 @@ export function UploadModal({ open, onOpenChange }: Props) {
   const [upload, { isLoading }] = useUploadFilesMutation();
 
   const addFiles = (incoming: File[]) => {
+    const { valid, rejected } = rejectOversized(incoming);
+    rejected.forEach((f) => toast.error(`${f.name} exceeds the 500 MB limit`));
     setFiles((prev) => {
       const names = new Set(prev.map((f) => f.name));
-      return [...prev, ...incoming.filter((f) => !names.has(f.name))];
+      return [...prev, ...valid.filter((f) => !names.has(f.name))];
     });
   };
 
