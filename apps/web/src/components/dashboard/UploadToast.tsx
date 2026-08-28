@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Upload, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Upload, X } from 'lucide-react';
 import { formatBytes } from '@/lib/format';
 
 export interface UploadProgress {
@@ -13,12 +13,12 @@ interface Props {
   fileName: string;
   onCancel?: () => void;
   progress?: UploadProgress;
+  errorMessage?: string;
 }
 
-export function UploadToast({ status, fileName, onCancel, progress }: Props) {
+export function UploadToast({ status, fileName, onCancel, progress, errorMessage }: Props) {
   const [simulatedWidth, setSimulatedWidth] = useState(0);
 
-  // Simulated animation only used when real progress isn't available
   useEffect(() => {
     if (progress) return;
     if (status === 'uploading') {
@@ -36,24 +36,24 @@ export function UploadToast({ status, fileName, onCancel, progress }: Props) {
 
   const isProcessing = status === 'uploading' && realWidth !== null && realWidth >= 100;
 
-  const barWidth = status === 'done' || isProcessing
+  const barWidth = status === 'done' || status === 'error' || isProcessing
     ? 100
     : (realWidth ?? simulatedWidth);
 
-  const barTransition = status === 'done'
+  const barTransition = status === 'done' || status === 'error'
     ? 'width 300ms ease-in-out'
     : realWidth !== null
       ? 'width 200ms linear'
       : 'width 8s cubic-bezier(0.05, 0.6, 0.3, 1)';
 
+  const barColor = status === 'error' ? 'bg-destructive' : 'bg-primary';
+
   return (
     <div className="relative w-72 overflow-hidden rounded-lg border bg-background px-4 py-3 shadow-lg">
       <div className="flex items-center gap-3">
-        {status === 'done' ? (
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
-        ) : (
-          <Upload className="h-5 w-5 shrink-0 animate-pulse text-muted-foreground" />
-        )}
+        {status === 'done' && <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />}
+        {status === 'error' && <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />}
+        {status === 'uploading' && <Upload className="h-5 w-5 shrink-0 animate-pulse text-muted-foreground" />}
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium" title={fileName}>
@@ -61,7 +61,7 @@ export function UploadToast({ status, fileName, onCancel, progress }: Props) {
           </p>
           {status === 'uploading' && progress && progress.total > 0 && (
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {progress.loaded >= progress.total ? (
+              {isProcessing ? (
                 'Processing…'
               ) : (
                 <>
@@ -70,6 +70,9 @@ export function UploadToast({ status, fileName, onCancel, progress }: Props) {
                 </>
               )}
             </p>
+          )}
+          {status === 'error' && errorMessage && (
+            <p className="mt-0.5 text-xs text-destructive">{errorMessage}</p>
           )}
         </div>
 
@@ -84,7 +87,7 @@ export function UploadToast({ status, fileName, onCancel, progress }: Props) {
       </div>
 
       <div
-        className={`absolute bottom-0 left-0 h-0.5 bg-primary${isProcessing ? ' animate-pulse' : ''}`}
+        className={`absolute bottom-0 left-0 h-0.5 ${barColor}${isProcessing ? ' animate-pulse' : ''}`}
         style={{ width: `${barWidth}%`, transition: barTransition }}
       />
     </div>

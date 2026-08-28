@@ -83,8 +83,17 @@ export function FilesCard() {
             () => <UploadToast status="done" fileName={file.name} />,
             { id: toastId, duration: 2500 },
           );
-        } catch {
-          toast.dismiss(toastId);
+        } catch (err: unknown) {
+          const isAbort = (err as any)?.error === 'Aborted';
+          if (isAbort) {
+            toast.dismiss(toastId);
+          } else {
+            const message = (err as any)?.data?.message ?? 'Upload failed';
+            toast.custom(
+              () => <UploadToast status="error" fileName={file.name} errorMessage={message} />,
+              { id: toastId, duration: 4000 },
+            );
+          }
         }
       }),
     );
