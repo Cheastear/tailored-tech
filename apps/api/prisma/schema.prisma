@@ -7,13 +7,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SpaceRole {
+  OWNER
+  WRITER
+  READER
+}
+
 model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  name             String?
+  password         String?
+  googleId         String?       @unique
+  avatar           String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  ownedSpaces      Space[]       @relation("OwnedSpaces")
+  spaceMemberships SpaceMember[]
+  uploadedFiles    File[]        @relation("UploadedFiles")
+}
+
+model Space {
+  id        String        @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User          @relation("OwnedSpaces", fields: [ownerId], references: [id])
+  members   SpaceMember[]
+  folders   Folder[]
+  files     File[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model SpaceMember {
+  id        String    @id @default(cuid())
+  spaceId   String
+  space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  role      SpaceRole
+  createdAt DateTime  @default(now())
+
+  @@unique([spaceId, userId])
+}
+
+model Folder {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String?
-  googleId  String?  @unique
-  avatar    String?
+  name      String
+  spaceId   String
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderChildren")
+  files     File[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model File {
+  id           String   @id @default(cuid())
+  name         String
+  url          String
+  size         Int
+  mimeType     String
+  spaceId      String
+  space        Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  folderId     String?
+  folder       Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User     @relation("UploadedFiles", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
 }
