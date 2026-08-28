@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { Loader2, Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,37 +28,24 @@ export function SettingsView() {
   const [renameSpace, { isLoading: isRenaming }] = useRenameSpaceMutation();
   const [deleteSpace, { isLoading: isDeleting }] = useDeleteSpaceMutation();
 
-  const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
 
   const isOwner = space?.ownerId === me?.id;
   const canDelete = deleteInput === DELETE_PHRASE;
+  const nameChanged = nameInput.trim() !== space?.name;
 
   useEffect(() => {
-    if (editingName) nameInputRef.current?.focus();
-  }, [editingName]);
-
-  const startEditing = () => {
-    setNameInput(space?.name ?? '');
-    setEditingName(true);
-  };
-
-  const cancelEditing = () => setEditingName(false);
+    if (space) setNameInput(space.name);
+  }, [space?.name]);
 
   const handleRename = async () => {
     const trimmed = nameInput.trim();
-    if (!spaceId || !trimmed || trimmed === space?.name) {
-      setEditingName(false);
-      return;
-    }
+    if (!spaceId || !trimmed || !nameChanged) return;
     try {
       await renameSpace({ id: spaceId, name: trimmed }).unwrap();
       toast.success('Space renamed');
-      setEditingName(false);
     } catch {
       toast.error('Failed to rename space');
     }
@@ -87,48 +74,34 @@ export function SettingsView() {
 
   return (
     <>
-      <div className="space-y-6 max-w-4xl mx-auto px-1.5rem">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Space name
-            </CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold">Space settings</CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
-            {editingName && isOwner ? (
-              <div className="flex items-center gap-2">
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="space-name">Name</Label>
+              <div className="flex gap-2">
                 <Input
-                  ref={nameInputRef}
+                  id="space-name"
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleRename();
-                    if (e.key === 'Escape') cancelEditing();
-                  }}
-                  className="h-9 text-xl font-semibold"
+                  onKeyDown={(e) => e.key === 'Enter' && nameChanged && handleRename()}
+                  disabled={!isOwner || isRenaming}
+                  className="max-w-sm"
                 />
-                <Button size="sm" onClick={handleRename} disabled={isRenaming || !nameInput.trim()}>
-                  {isRenaming ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={cancelEditing} disabled={isRenaming}>
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 group">
-                <h2 className="text-xl font-semibold">{space.name}</h2>
                 {isOwner && (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
-                    onClick={startEditing}
+                    onClick={handleRename}
+                    disabled={!nameChanged || !nameInput.trim() || isRenaming}
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    {isRenaming && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Save
                   </Button>
                 )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
@@ -146,16 +119,6 @@ export function SettingsView() {
                 <Trash2 className="h-4 w-4" />
                 Delete this space
               </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {!isOwner && (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">
-                Only the space owner can manage settings.
-              </p>
             </CardContent>
           </Card>
         )}
