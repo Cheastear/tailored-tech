@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Space, SpaceDetail, SpaceMember } from '@/types/space';
 import type { Folder } from '@/types/folder';
 import type { SpaceFile } from '@/types/file';
+import { apiBase } from '@/lib/api';
 
 type UploadArgs = {
   spaceId: string;
@@ -9,8 +10,6 @@ type UploadArgs = {
   files: File[];
   onProgress?: (loaded: number, total: number) => void;
 };
-
-const apiBase = `${import.meta.env.VITE_API_URL ?? ''}/api`;
 
 export const spacesApi = createApi({
   reducerPath: 'spacesApi',

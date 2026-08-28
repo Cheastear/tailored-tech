@@ -2,6 +2,7 @@ import { Download, File, FileImage, FileText, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/lib/format';
 import { setDragItem, type DragItem } from '@/lib/dnd';
+import { apiBase } from '@/lib/api';
 import type { SpaceFile } from '@/types/file';
 
 function FileIcon({ mimeType }: { mimeType: string }) {
@@ -19,7 +20,7 @@ interface FileItemProps {
 }
 
 export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
-  const downloadUrl = `${import.meta.env.VITE_API_URL ?? ''}/api/spaces/${file.spaceId}/files/${file.id}/download`;
+  const downloadUrl = `${apiBase}/spaces/${file.spaceId}/files/${file.id}/download`;
 
   const handleDragStart = (e: React.DragEvent) => {
     const item: DragItem = { kind: 'file', id: file.id, name: file.name };

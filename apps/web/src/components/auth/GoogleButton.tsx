@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { apiBase } from '@/lib/api';
 
 interface GoogleButtonProps {
   label: string;
@@ -7,7 +8,7 @@ interface GoogleButtonProps {
 export function GoogleButton({ label }: GoogleButtonProps) {
   return (
     <Button variant="outline" className="w-full" asChild>
-      <a href={`${import.meta.env.VITE_API_URL ?? ''}/api/auth/google`}>
+      <a href={`${apiBase}/auth/google`}>
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path
             fill="#4285F4"

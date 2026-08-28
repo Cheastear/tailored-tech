@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { User } from '../types/user';
 import { spacesApi } from './spacesApi';
+import { apiBase } from '@/lib/api';
 
 interface LoginRequest {
   email: string;
@@ -12,8 +13,6 @@ interface RegisterRequest {
   password: string;
   name?: string;
 }
-
-const apiBase = `${import.meta.env.VITE_API_URL ?? ''}/api`;
 
 export const authApi = createApi({
   reducerPath: 'authApi',
