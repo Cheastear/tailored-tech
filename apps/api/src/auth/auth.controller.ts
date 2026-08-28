@@ -112,7 +112,7 @@ export class AuthController {
     return { success: true };
   }
 
-  private sanitize({ password: _password, ...user }: User) {
-    return user;
+  private sanitize({ password, ...user }: User) {
+    return { ...user, hasPassword: !!password };
   }
 }

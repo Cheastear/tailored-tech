@@ -107,7 +107,7 @@ export function UserProfileDialog({ open, onOpenChange }: UserProfileDialogProps
   const nameChanged = nameInput.trim() !== (user?.name ?? '');
   const profileDirty = nameChanged || !!pendingAvatarFile;
   const displayAvatar = avatarPreview ?? user?.avatar ?? undefined;
-  const hasPassword = !!user && !('googleId' in user && !user.name);
+  const hasPassword = user?.hasPassword ?? false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
