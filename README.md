@@ -32,7 +32,7 @@ A virtual Data Room MVP for secure document storage and sharing — built as a f
 | Auth                  | JWT (HTTP-only cookie) · Google OAuth 2.0                  |
 | Real-time             | Socket.io (WebSocket)                                      |
 | Monorepo              | npm workspaces                                             |
-| Deployment            | Vercel                                                     |
+| Deployment            | Vercel (frontend) · Fly.io (API)                           |
 
 ---
 
@@ -249,19 +249,48 @@ The web app is available at `http://localhost:5173` and the API at `http://local
 
 ---
 
+## Deploying to Production
+
+The frontend deploys to **Vercel** automatically on push to `main`.
+
+The API deploys to **Fly.io**:
+
+```bash
+# First time
+fly launch --no-deploy
+
+fly secrets set \
+  DATABASE_URL="..." \
+  JWT_SECRET="..." \
+  FRONTEND_URL="https://<app>.vercel.app" \
+  BLOB_READ_WRITE_TOKEN="..." \
+  GOOGLE_CLIENT_ID="..." \
+  GOOGLE_CLIENT_SECRET="..." \
+  GOOGLE_CALLBACK_URL="https://<app>.fly.dev/api/auth/google/callback"
+
+fly deploy
+
+# Subsequent deploys
+fly deploy
+```
+
+After the first deploy, set `VITE_API_URL=https://<app>.fly.dev` in your Vercel project's environment variables and redeploy the frontend.
+
+---
+
 ## Environment Variables
 
 ### `apps/api/.env`
 
-| Variable                | Description                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| `DATABASE_URL`          | PostgreSQL connection string                                                    |
-| `JWT_SECRET`            | Secret used to sign JWT access tokens                                           |
-| `GOOGLE_CLIENT_ID`      | Google OAuth 2.0 client ID                                                      |
-| `GOOGLE_CLIENT_SECRET`  | Google OAuth 2.0 client secret                                                  |
-| `GOOGLE_CALLBACK_URL`   | OAuth redirect URL (e.g. `http://localhost:3000/api/auth/google/callback`)      |
-| `FRONTEND_URL`          | Frontend origin used for CORS and OAuth redirect (e.g. `http://localhost:5173`) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token                                                    |
+| Variable                | Description                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`          | PostgreSQL connection string                                                                                                         |
+| `JWT_SECRET`            | Secret used to sign JWT access tokens                                                                                                |
+| `GOOGLE_CLIENT_ID`      | Google OAuth 2.0 client ID                                                                                                           |
+| `GOOGLE_CLIENT_SECRET`  | Google OAuth 2.0 client secret                                                                                                       |
+| `GOOGLE_CALLBACK_URL`   | OAuth redirect URL — local: `http://localhost:3000/api/auth/google/callback`, prod: `https://<app>.fly.dev/api/auth/google/callback` |
+| `FRONTEND_URL`          | Frontend origin for CORS — local: `http://localhost:5173`, prod: `https://<app>.vercel.app`                                          |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token                                                                                                         |
 
 ### `apps/web/.env`
 
