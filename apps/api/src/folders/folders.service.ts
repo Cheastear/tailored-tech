@@ -34,6 +34,18 @@ export class FoldersService {
     return this.prisma.folder.create({ data: { name, spaceId, parentId } });
   }
 
+  async getAncestors(spaceId: string, userId: string, folderId: string) {
+    await this.spaces.assertReadAccess(spaceId, userId);
+    const path: { id: string; name: string }[] = [];
+    let current = await this.prisma.folder.findFirst({ where: { id: folderId, spaceId } });
+    while (current) {
+      path.unshift({ id: current.id, name: current.name });
+      if (!current.parentId) break;
+      current = await this.prisma.folder.findFirst({ where: { id: current.parentId, spaceId } });
+    }
+    return path;
+  }
+
   async remove(id: string, spaceId: string, userId: string) {
     await this.spaces.assertWriteAccess(spaceId, userId);
 

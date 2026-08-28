@@ -1,5 +1,4 @@
-import { Fragment, useState } from 'react';
-import { Filter, Upload } from 'lucide-react';
+import { Fragment } from 'react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,23 +7,31 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useNavigation } from '@/context/NavigationContext';
-import { useCanWrite } from '@/hooks/useCanWrite';
 import { useGetSpacesQuery } from '@/store/spacesApi';
-import { UploadModal } from './UploadModal';
 
 export function PageHeader() {
-  const { spaceId, folderPath, navigateTo, activeView } = useNavigation();
+  const { spaceId, folderPath, navigateTo, activeView, setActiveView } = useNavigation();
   const { data: spaces = [] } = useGetSpacesQuery();
-  const canWrite = useCanWrite();
-  const [uploadOpen, setUploadOpen] = useState(false);
 
   const spaceName = spaces.find((s) => s.id === spaceId)?.name ?? '…';
 
+  // Space name is a link (not a page) whenever there's somewhere to go back to:
+  // - inside a folder in files view
+  // - on members or settings view
+  const spaceNameIsLink =
+    (activeView === 'files' && folderPath.length > 0) || activeView !== 'files';
+
+  const handleSpaceClick = () => {
+    if (activeView !== 'files') {
+      setActiveView('files');
+    } else {
+      navigateTo(-1);
+    }
+  };
+
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
+    <header className="flex h-14 shrink-0 items-center border-b bg-background px-6">
       <Breadcrumb>
         <BreadcrumbList>
           {!spaceId ? (
@@ -34,10 +41,8 @@ export function PageHeader() {
           ) : (
             <>
               <BreadcrumbItem>
-                {activeView === 'files' && folderPath.length === 0 ? (
-                  <BreadcrumbPage>{spaceName}</BreadcrumbPage>
-                ) : activeView === 'files' ? (
-                  <BreadcrumbLink className="cursor-pointer" onClick={() => navigateTo(-1)}>
+                {spaceNameIsLink ? (
+                  <BreadcrumbLink className="cursor-pointer" onClick={handleSpaceClick}>
                     {spaceName}
                   </BreadcrumbLink>
                 ) : (
@@ -45,6 +50,7 @@ export function PageHeader() {
                 )}
               </BreadcrumbItem>
 
+              {/* Folder path — only in files view */}
               {activeView === 'files' &&
                 folderPath.map((folder, index) => {
                   const isLast = index === folderPath.length - 1;
@@ -67,6 +73,7 @@ export function PageHeader() {
                   );
                 })}
 
+              {/* Members / Settings suffix */}
               {activeView !== 'files' && (
                 <>
                   <BreadcrumbSeparator />
@@ -79,22 +86,6 @@ export function PageHeader() {
           )}
         </BreadcrumbList>
       </Breadcrumb>
-
-      {spaceId && activeView === 'files' && canWrite && (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="gap-1.5">
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
-          <Separator orientation="vertical" className="h-5" />
-          <Button size="sm" className="gap-1.5" onClick={() => setUploadOpen(true)}>
-            <Upload className="h-4 w-4" />
-            Upload
-          </Button>
-        </div>
-      )}
-
-      <UploadModal open={uploadOpen} onOpenChange={setUploadOpen} />
     </header>
   );
 }

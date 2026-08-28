@@ -29,6 +29,15 @@ export class FoldersController {
     return this.folders.create(spaceId, user.id, dto.name, dto.parentId);
   }
 
+  @Get(':id/ancestors')
+  getAncestors(
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.folders.getAncestors(spaceId, user.id, id);
+  }
+
   @Delete(':id')
   remove(@Param('spaceId') spaceId: string, @Param('id') id: string, @CurrentUser() user: User) {
     return this.folders.remove(id, spaceId, user.id);

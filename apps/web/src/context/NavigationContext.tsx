@@ -1,6 +1,7 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Space } from '@/types/space';
+import { useGetFolderAncestorsQuery } from '@/store/spacesApi';
 
 export type ActiveView = 'files' | 'members' | 'settings';
 
@@ -30,9 +31,24 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const spaceId = searchParams.get('spaceId');
   const folderId = searchParams.get('folderId') ?? undefined;
 
+  // Rebuild folderPath from the API when folderId is in the URL but state is empty
+  // (happens on page load/refresh with a deep link)
+  const needsHydration = !!folderId && folderPath.length === 0;
+  const { data: ancestors } = useGetFolderAncestorsQuery(
+    { spaceId: spaceId!, folderId: folderId! },
+    { skip: !needsHydration || !spaceId },
+  );
+
+  useEffect(() => {
+    if (ancestors && ancestors.length > 0 && folderPath.length === 0) {
+      setFolderPath(ancestors);
+    }
+  }, [ancestors]);
+
   const setSpace = useCallback(
     (space: Space) => {
       setFolderPath([]);
+      setActiveView('files');
       setSearchParams({ spaceId: space.id });
     },
     [setSearchParams],

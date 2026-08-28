@@ -38,6 +38,19 @@ export const spacesApi = createApi({
       providesTags: ['Folder'],
     }),
 
+    getFolderAncestors: builder.query<{ id: string; name: string }[], { spaceId: string; folderId: string }>({
+      query: ({ spaceId, folderId }) => `/spaces/${spaceId}/folders/${folderId}/ancestors`,
+    }),
+
+    createFolder: builder.mutation<Folder, { spaceId: string; name: string; parentId?: string }>({
+      query: ({ spaceId, name, parentId }) => ({
+        url: `/spaces/${spaceId}/folders`,
+        method: 'POST',
+        body: { name, parentId },
+      }),
+      invalidatesTags: ['Folder'],
+    }),
+
     getFiles: builder.query<SpaceFile[], { spaceId: string; folderId?: string }>({
       query: ({ spaceId, folderId }) => ({
         url: `/spaces/${spaceId}/files`,
@@ -119,6 +132,8 @@ export const {
   useAddMemberMutation,
   useRemoveMemberMutation,
   useGetFoldersQuery,
+  useGetFolderAncestorsQuery,
+  useCreateFolderMutation,
   useGetFilesQuery,
   useUploadFilesMutation,
 } = spacesApi;
