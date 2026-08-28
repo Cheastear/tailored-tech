@@ -22,7 +22,8 @@ export function useSpaceSync(spaceId: string | null) {
     const onFileChange = () => dispatch(spacesApi.util.invalidateTags(['File', 'Folder', 'Space']));
     const onFileMoved = () => dispatch(spacesApi.util.invalidateTags(['File', 'Folder']));
     const onFileRenamed = () => dispatch(spacesApi.util.invalidateTags(['File']));
-    const onFolderChange = () => dispatch(spacesApi.util.invalidateTags(['Folder', 'File', 'Space']));
+    const onFolderChange = () =>
+      dispatch(spacesApi.util.invalidateTags(['Folder', 'File', 'Space']));
     const onFolderUpdate = () => dispatch(spacesApi.util.invalidateTags(['Folder', 'File']));
     const onSpaceUpdate = () => dispatch(spacesApi.util.invalidateTags(['Space']));
 
