@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Loader2, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigation } from '@/context/NavigationContext';
-import { useGetSpaceQuery, useDeleteSpaceMutation } from '@/store/spacesApi';
+import { useGetSpaceQuery, useRenameSpaceMutation, useDeleteSpaceMutation } from '@/store/spacesApi';
 import { useGetMeQuery } from '@/store/authApi';
 
 const DELETE_PHRASE = 'delete my space';
@@ -25,13 +25,44 @@ export function SettingsView() {
   const [, setSearchParams] = useSearchParams();
   const { data: space } = useGetSpaceQuery(spaceId!, { skip: !spaceId });
   const { data: me } = useGetMeQuery();
+  const [renameSpace, { isLoading: isRenaming }] = useRenameSpaceMutation();
   const [deleteSpace, { isLoading: isDeleting }] = useDeleteSpaceMutation();
+
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
 
   const isOwner = space?.ownerId === me?.id;
   const canDelete = deleteInput === DELETE_PHRASE;
+
+  useEffect(() => {
+    if (editingName) nameInputRef.current?.focus();
+  }, [editingName]);
+
+  const startEditing = () => {
+    setNameInput(space?.name ?? '');
+    setEditingName(true);
+  };
+
+  const cancelEditing = () => setEditingName(false);
+
+  const handleRename = async () => {
+    const trimmed = nameInput.trim();
+    if (!spaceId || !trimmed || trimmed === space?.name) {
+      setEditingName(false);
+      return;
+    }
+    try {
+      await renameSpace({ id: spaceId, name: trimmed }).unwrap();
+      toast.success('Space renamed');
+      setEditingName(false);
+    } catch {
+      toast.error('Failed to rename space');
+    }
+  };
 
   const handleOpenDialog = () => {
     setDeleteInput('');
@@ -58,14 +89,46 @@ export function SettingsView() {
     <>
       <div className="space-y-6 max-w-4xl mx-auto px-1.5rem">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">Space info</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Space name
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Name</Label>
-              <p className="text-sm font-medium">{space.name}</p>
-            </div>
+          <CardContent className="pt-0">
+            {editingName && isOwner ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={nameInputRef}
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleRename();
+                    if (e.key === 'Escape') cancelEditing();
+                  }}
+                  className="h-9 text-xl font-semibold"
+                />
+                <Button size="sm" onClick={handleRename} disabled={isRenaming || !nameInput.trim()}>
+                  {isRenaming ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={cancelEditing} disabled={isRenaming}>
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group">
+                <h2 className="text-xl font-semibold">{space.name}</h2>
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                    onClick={startEditing}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -98,12 +161,7 @@ export function SettingsView() {
         )}
       </div>
 
-      <Dialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!isDeleting) setDialogOpen(open);
-        }}
-      >
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!isDeleting) setDialogOpen(open); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete space</DialogTitle>
@@ -116,9 +174,7 @@ export function SettingsView() {
           <div className="space-y-2">
             <Label htmlFor="delete-confirm">
               Type{' '}
-              <span className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
-                {DELETE_PHRASE}
-              </span>{' '}
+              <span className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{DELETE_PHRASE}</span>{' '}
               to confirm
             </Label>
             <Input
@@ -136,11 +192,7 @@ export function SettingsView() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isDeleting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              disabled={!canDelete || isDeleting}
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" disabled={!canDelete || isDeleting} onClick={handleDelete}>
               {isDeleting && <Loader2 className="h-4 w-4 animate-spin" />}
               Delete space
             </Button>

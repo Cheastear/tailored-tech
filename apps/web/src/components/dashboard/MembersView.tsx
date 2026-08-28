@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -73,8 +73,13 @@ export function MembersView() {
     <>
       <Card className="max-w-4xl mx-auto px-1.5rem">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Members</CardTitle>
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+                Members
+              </p>
+              <h2 className="text-xl font-semibold">{space.name}</h2>
+            </div>
             {isOwner && (
               <Button size="sm" onClick={() => setDialogOpen(true)}>
                 <UserPlus className="h-4 w-4" />

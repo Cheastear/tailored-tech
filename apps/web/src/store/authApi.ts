@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { User } from '../types/user';
+import { spacesApi } from './spacesApi';
 
 interface LoginRequest {
   email: string;
@@ -22,6 +23,7 @@ export const authApi = createApi({
     login: builder.mutation<User, LoginRequest>({
       query: (body) => ({ url: '/auth/login', method: 'POST', body }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(spacesApi.util.resetApiState());
         const { data } = await queryFulfilled;
         dispatch(authApi.util.upsertQueryData('getMe', undefined, data));
       },
@@ -29,6 +31,7 @@ export const authApi = createApi({
     register: builder.mutation<User, RegisterRequest>({
       query: (body) => ({ url: '/auth/register', method: 'POST', body }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        dispatch(spacesApi.util.resetApiState());
         const { data } = await queryFulfilled;
         dispatch(authApi.util.upsertQueryData('getMe', undefined, data));
       },
@@ -37,6 +40,7 @@ export const authApi = createApi({
       query: () => ({ url: '/auth/logout', method: 'POST' }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await queryFulfilled;
+        dispatch(spacesApi.util.resetApiState());
         dispatch(authApi.util.resetApiState());
       },
     }),

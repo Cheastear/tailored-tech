@@ -46,6 +46,11 @@ export const spacesApi = createApi({
       providesTags: ['File'],
     }),
 
+    renameSpace: builder.mutation<Space, { id: string; name: string }>({
+      query: ({ id, name }) => ({ url: `/spaces/${id}`, method: 'PATCH', body: { name } }),
+      invalidatesTags: (_r, _e, { id }) => ['Space', { type: 'Space', id }],
+    }),
+
     deleteSpace: builder.mutation<void, string>({
       query: (id) => ({ url: `/spaces/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Space'],
@@ -106,6 +111,7 @@ export const {
   useGetSpacesQuery,
   useGetSpaceQuery,
   useCreateSpaceMutation,
+  useRenameSpaceMutation,
   useDeleteSpaceMutation,
   useAddMemberMutation,
   useRemoveMemberMutation,
