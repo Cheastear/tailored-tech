@@ -28,17 +28,25 @@ export class SpacesService {
   async findOne(id: string, userId: string) {
     await this.assertReadAccess(id, userId);
 
-    return this.prisma.space.findUnique({
-      where: { id },
-      include: {
-        members: {
-          include: {
-            user: { select: { id: true, email: true, name: true, avatar: true } },
+    const [space, sizeAgg] = await Promise.all([
+      this.prisma.space.findUnique({
+        where: { id },
+        include: {
+          members: {
+            include: {
+              user: { select: { id: true, email: true, name: true, avatar: true } },
+            },
           },
+          _count: { select: { files: true, folders: true } },
         },
-        _count: { select: { files: true, folders: true } },
-      },
-    });
+      }),
+      this.prisma.file.aggregate({
+        where: { spaceId: id },
+        _sum: { size: true },
+      }),
+    ]);
+
+    return { ...space, totalSize: sizeAgg._sum.size ?? 0 };
   }
 
   async rename(id: string, userId: string, name: string) {

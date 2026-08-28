@@ -9,3 +9,19 @@ export interface Space {
     folders: number;
   };
 }
+
+export interface SpaceMember {
+  id: string;
+  role: 'OWNER' | 'WRITER' | 'READER';
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    avatar: string | null;
+  };
+}
+
+export interface SpaceDetail extends Space {
+  members: SpaceMember[];
+  totalSize: number;
+}

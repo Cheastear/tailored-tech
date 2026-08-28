@@ -1,12 +1,7 @@
 import { Download, File, FileImage, FileText, FileVideo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatBytes } from '@/lib/format';
 import type { SpaceFile } from '@/types/file';
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function FileIcon({ mimeType }: { mimeType: string }) {
   const cls = 'h-5 w-5 text-primary';
