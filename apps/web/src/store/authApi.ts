@@ -44,7 +44,30 @@ export const authApi = createApi({
         dispatch(authApi.util.resetApiState());
       },
     }),
+
+    updateProfile: builder.mutation<User, { name?: string; currentPassword?: string; newPassword?: string }>({
+      query: (body) => ({ url: '/auth/me', method: 'PATCH', body }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        dispatch(authApi.util.upsertQueryData('getMe', undefined, data));
+      },
+    }),
+
+    uploadAvatar: builder.mutation<User, FormData>({
+      query: (body) => ({ url: '/auth/me/avatar', method: 'POST', body }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        dispatch(authApi.util.upsertQueryData('getMe', undefined, data));
+      },
+    }),
   }),
 });
 
-export const { useGetMeQuery, useLoginMutation, useRegisterMutation, useLogoutMutation } = authApi;
+export const {
+  useGetMeQuery,
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useUpdateProfileMutation,
+  useUploadAvatarMutation,
+} = authApi;

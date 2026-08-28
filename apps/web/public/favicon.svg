@@ -1,26 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#8b5cf6"/>
-    </linearGradient>
-  </defs>
+  <rect width="64" height="64" rx="14" fill="#111"/>
 
-  <!-- Background -->
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-
-  <!-- Stacked files -->
-  <!-- Back file -->
-  <rect x="18" y="16" width="24" height="30" rx="3" fill="white" fill-opacity="0.25"/>
-  <!-- Middle file -->
-  <rect x="21" y="13" width="24" height="30" rx="3" fill="white" fill-opacity="0.4"/>
-  <!-- Front file -->
-  <rect x="24" y="10" width="24" height="30" rx="3" fill="white"/>
-  <!-- Lines on front file -->
-  <rect x="29" y="18" width="14" height="2.5" rx="1.25" fill="#8b5cf6"/>
-  <rect x="29" y="23" width="10" height="2.5" rx="1.25" fill="#8b5cf6" fill-opacity="0.5"/>
-  <rect x="29" y="28" width="12" height="2.5" rx="1.25" fill="#8b5cf6" fill-opacity="0.5"/>
-
-  <!-- Upload arrow -->
-  <path d="M32 46 L32 56 M28 50 L32 46 L36 50" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Folder tab -->
+  <path d="M12 28 L12 23 Q12 20 15 20 L26 20 L30 24 L30 28 Z" fill="white"/>
+  <!-- Folder body -->
+  <rect x="12" y="26" width="40" height="22" rx="3" fill="white"/>
 </svg>

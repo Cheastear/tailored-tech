@@ -28,6 +28,10 @@ export class UsersService {
     return this.prisma.user.create({ data });
   }
 
+  update(id: string, data: { name?: string; password?: string; avatar?: string }): Promise<User> {
+    return this.prisma.user.update({ where: { id }, data });
+  }
+
   linkGoogle(id: string, googleId: string, avatar?: string): Promise<User> {
     return this.prisma.user.update({
       where: { id },

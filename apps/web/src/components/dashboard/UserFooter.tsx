@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useGetMeQuery, useLogoutMutation } from '@/store/authApi';
+import { UserProfileDialog } from './UserProfileDialog';
 
 function getInitials(name?: string | null, email?: string | null) {
   if (name) return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
@@ -14,6 +16,7 @@ export function UserFooter() {
   const navigate = useNavigate();
   const { data: user } = useGetMeQuery();
   const [logout] = useLogoutMutation();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -24,19 +27,25 @@ export function UserFooter() {
     <div>
       <Separator />
       <div className="flex items-center gap-2.5 px-4 py-3">
-        <Avatar className="h-7 w-7">
-          <AvatarImage src={user?.avatar ?? undefined} />
-          <AvatarFallback className="text-xs">
-            {getInitials(user?.name, user?.email)}
-          </AvatarFallback>
-        </Avatar>
+        <button
+          type="button"
+          onClick={() => setProfileOpen(true)}
+          className="flex flex-1 min-w-0 items-center gap-2.5 rounded-md hover:bg-muted/60 transition-colors -mx-1.5 px-1.5 py-1 text-left"
+        >
+          <Avatar className="h-7 w-7 shrink-0">
+            <AvatarImage src={user?.avatar ?? undefined} />
+            <AvatarFallback className="text-xs">
+              {getInitials(user?.name, user?.email)}
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-medium leading-none">{user?.name ?? user?.email}</p>
-          {user?.name && (
-            <p className="truncate text-xs text-muted-foreground mt-0.5">{user.email}</p>
-          )}
-        </div>
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-sm font-medium leading-none">{user?.name ?? user?.email}</p>
+            {user?.name && (
+              <p className="truncate text-xs text-muted-foreground mt-0.5">{user.email}</p>
+            )}
+          </div>
+        </button>
 
         <Button
           variant="ghost"
@@ -48,6 +57,8 @@ export function UserFooter() {
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
+
+      <UserProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   );
 }
