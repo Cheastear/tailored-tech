@@ -81,7 +81,7 @@ export function SettingsView() {
       <div className="space-y-6 max-w-4xl mx-auto">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">Space settings</CardTitle>
+            <CardTitle className="text-xl font-semibold">Space settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
