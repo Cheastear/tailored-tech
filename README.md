@@ -21,34 +21,37 @@ A virtual Data Room MVP for secure document storage and sharing — built as a f
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Vite · React 19 · TypeScript · Tailwind CSS v4 · Shadcn UI |
-| State / Data fetching | Redux Toolkit · RTK Query |
-| Routing | React Router v7 |
-| Backend | NestJS · Prisma ORM |
-| Database | PostgreSQL |
-| File storage | Vercel Blob |
-| Auth | JWT (HTTP-only cookie) · Google OAuth 2.0 |
-| Real-time | Socket.io (WebSocket) |
-| Monorepo | npm workspaces |
-| Deployment | Vercel |
+| Layer                 | Technology                                                 |
+| --------------------- | ---------------------------------------------------------- |
+| Frontend              | Vite · React 19 · TypeScript · Tailwind CSS v4 · Shadcn UI |
+| State / Data fetching | Redux Toolkit · RTK Query                                  |
+| Routing               | React Router v7                                            |
+| Backend               | NestJS · Prisma ORM                                        |
+| Database              | PostgreSQL                                                 |
+| File storage          | Vercel Blob                                                |
+| Auth                  | JWT (HTTP-only cookie) · Google OAuth 2.0                  |
+| Real-time             | Socket.io (WebSocket)                                      |
+| Monorepo              | npm workspaces                                             |
+| Deployment            | Vercel                                                     |
 
 ---
 
 ## Features
 
 ### Spaces (Data Rooms)
+
 - Create and manage multiple Data Rooms
 - Each Space belongs to its owner and is invisible to others unless explicitly shared
 
 ### Folders
+
 - Create folders and nest them arbitrarily deep
 - Breadcrumb navigation reflecting the current path
 - Rename folders in-place
 - Delete a folder with a confirmation dialog listing all nested folders and files that will be removed
 
 ### Files
+
 - Upload PDFs — multiple at once, drag-and-drop, with per-file upload progress
 - Preview files directly in the browser
 - Rename files (name conflicts within a folder are handled with automatic versioning)
@@ -56,6 +59,7 @@ A virtual Data Room MVP for secure document storage and sharing — built as a f
 - Delete files
 
 ### Sharing
+
 - Share a Space, a folder, or a single file
 - **Public link** — anyone with the token URL gets read-only access, no login required
 - **Permissioned share** — only specific email addresses you grant can view the content
@@ -63,9 +67,11 @@ A virtual Data Room MVP for secure document storage and sharing — built as a f
 - Owner can revoke any share at any time; revoked links stop working immediately
 
 ### Search
+
 - Search files by name across the entire Data Room
 
 ### Real-time sync
+
 - Uploads, renames, deletes, and moves are broadcast over WebSocket so all open sessions in the same Space see updates without a manual refresh
 
 ---
@@ -172,7 +178,7 @@ Listing only direct children by default (not the full recursive subtree) means t
 
 `SpaceMember.role` already carries `OWNER | WRITER | READER` at the Space level. Extending this to folder- or file-level granularity requires no changes to `Folder` or `File`:
 
-- Add a `role` column (same enum) to the `Share` table. A permissioned share then encodes both *who* can access and *what they can do*.
+- Add a `role` column (same enum) to the `Share` table. A permissioned share then encodes both _who_ can access and _what they can do_.
 - Replace `allowedEmails String[]` with a `ShareMember(shareId, userId, role)` join table for proper FK constraints, per-user revocation, and easy role upgrades without touching the share itself.
 
 Access-control logic stays entirely in the Share layer — the resource tables are untouched.
@@ -247,20 +253,20 @@ The web app is available at `http://localhost:5173` and the API at `http://local
 
 ### `apps/api/.env`
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Secret used to sign JWT access tokens |
-| `GOOGLE_CLIENT_ID` | Google OAuth 2.0 client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth 2.0 client secret |
-| `GOOGLE_CALLBACK_URL` | OAuth redirect URL (e.g. `http://localhost:3000/api/auth/google/callback`) |
-| `FRONTEND_URL` | Frontend origin used for CORS and OAuth redirect (e.g. `http://localhost:5173`) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token |
+| Variable                | Description                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string                                                    |
+| `JWT_SECRET`            | Secret used to sign JWT access tokens                                           |
+| `GOOGLE_CLIENT_ID`      | Google OAuth 2.0 client ID                                                      |
+| `GOOGLE_CLIENT_SECRET`  | Google OAuth 2.0 client secret                                                  |
+| `GOOGLE_CALLBACK_URL`   | OAuth redirect URL (e.g. `http://localhost:3000/api/auth/google/callback`)      |
+| `FRONTEND_URL`          | Frontend origin used for CORS and OAuth redirect (e.g. `http://localhost:5173`) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token                                                    |
 
 ### `apps/web/.env`
 
-| Variable | Description |
-|---|---|
+| Variable       | Description                                     |
+| -------------- | ----------------------------------------------- |
 | `VITE_API_URL` | Backend base URL (e.g. `http://localhost:3000`) |
 
 ---
