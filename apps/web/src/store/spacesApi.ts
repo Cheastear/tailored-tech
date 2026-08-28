@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { Space, SpaceDetail } from '@/types/space';
+import type { Space, SpaceDetail, SpaceMember } from '@/types/space';
 import type { Folder } from '@/types/folder';
 import type { SpaceFile } from '@/types/file';
 
@@ -46,6 +46,28 @@ export const spacesApi = createApi({
       providesTags: ['File'],
     }),
 
+    deleteSpace: builder.mutation<void, string>({
+      query: (id) => ({ url: `/spaces/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Space'],
+    }),
+
+    addMember: builder.mutation<SpaceMember, { spaceId: string; email: string; role: 'READER' | 'WRITER' }>({
+      query: ({ spaceId, email, role }) => ({
+        url: `/spaces/${spaceId}/members`,
+        method: 'POST',
+        body: { email, role },
+      }),
+      invalidatesTags: (_r, _e, { spaceId }) => [{ type: 'Space', id: spaceId }],
+    }),
+
+    removeMember: builder.mutation<void, { spaceId: string; userId: string }>({
+      query: ({ spaceId, userId }) => ({
+        url: `/spaces/${spaceId}/members/${userId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, { spaceId }) => [{ type: 'Space', id: spaceId }],
+    }),
+
     uploadFiles: builder.mutation<SpaceFile[], UploadArgs>({
       queryFn: ({ spaceId, folderId, files, onProgress }, { signal }) =>
         new Promise((resolve) => {
@@ -84,6 +106,9 @@ export const {
   useGetSpacesQuery,
   useGetSpaceQuery,
   useCreateSpaceMutation,
+  useDeleteSpaceMutation,
+  useAddMemberMutation,
+  useRemoveMemberMutation,
   useGetFoldersQuery,
   useGetFilesQuery,
   useUploadFilesMutation,

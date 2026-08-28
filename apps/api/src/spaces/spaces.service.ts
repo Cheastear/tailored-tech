@@ -32,6 +32,7 @@ export class SpacesService {
       this.prisma.space.findUnique({
         where: { id },
         include: {
+          owner: { select: { id: true, email: true, name: true, avatar: true } },
           members: {
             include: {
               user: { select: { id: true, email: true, name: true, avatar: true } },

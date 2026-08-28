@@ -22,6 +22,12 @@ export interface SpaceMember {
 }
 
 export interface SpaceDetail extends Space {
+  owner: {
+    id: string;
+    email: string;
+    name: string | null;
+    avatar: string | null;
+  };
   members: SpaceMember[];
   totalSize: number;
 }

@@ -15,7 +15,7 @@ import { useGetSpacesQuery } from '@/store/spacesApi';
 import { UploadModal } from './UploadModal';
 
 export function PageHeader() {
-  const { spaceId, folderPath, navigateTo } = useNavigation();
+  const { spaceId, folderPath, navigateTo, activeView } = useNavigation();
   const { data: spaces = [] } = useGetSpacesQuery();
   const [uploadOpen, setUploadOpen] = useState(false);
 
@@ -26,19 +26,18 @@ export function PageHeader() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            {folderPath.length === 0 ? (
+            {activeView === 'files' && folderPath.length === 0 ? (
               <BreadcrumbPage>{spaceName}</BreadcrumbPage>
-            ) : (
-              <BreadcrumbLink
-                className="cursor-pointer"
-                onClick={() => navigateTo(-1)}
-              >
+            ) : activeView === 'files' ? (
+              <BreadcrumbLink className="cursor-pointer" onClick={() => navigateTo(-1)}>
                 {spaceName}
               </BreadcrumbLink>
+            ) : (
+              <BreadcrumbPage>{spaceName}</BreadcrumbPage>
             )}
           </BreadcrumbItem>
 
-          {folderPath.map((folder, index) => {
+          {activeView === 'files' && folderPath.map((folder, index) => {
             const isLast = index === folderPath.length - 1;
             return (
               <Fragment key={folder.id}>
@@ -58,25 +57,36 @@ export function PageHeader() {
               </Fragment>
             );
           })}
+
+          {activeView !== 'files' && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="capitalize">{activeView}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </>
+          )}
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="gap-1.5">
-          <Filter className="h-4 w-4" />
-          Filter
-        </Button>
-        <Separator orientation="vertical" className="h-5" />
-        <Button
-          size="sm"
-          className="gap-1.5"
-          disabled={!spaceId}
-          onClick={() => setUploadOpen(true)}
-        >
-          <Upload className="h-4 w-4" />
-          Upload
-        </Button>
-      </div>
+      {activeView === 'files' && (
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="gap-1.5">
+            <Filter className="h-4 w-4" />
+            Filter
+          </Button>
+          <Separator orientation="vertical" className="h-5" />
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled={!spaceId}
+            onClick={() => setUploadOpen(true)}
+          >
+            <Upload className="h-4 w-4" />
+            Upload
+          </Button>
+        </div>
+      )}
 
       <UploadModal open={uploadOpen} onOpenChange={setUploadOpen} />
     </header>

@@ -1,25 +1,25 @@
-import { useState } from 'react';
 import { Files, Settings, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { type ActiveView, useNavigation } from '@/context/NavigationContext';
 
-const NAV_ITEMS = [
-  { label: 'Files', icon: Files },
-  { label: 'Members', icon: Users },
-  { label: 'Settings', icon: Settings },
+const NAV_ITEMS: { label: string; view: ActiveView; icon: React.ElementType }[] = [
+  { label: 'Files', view: 'files', icon: Files },
+  { label: 'Members', view: 'members', icon: Users },
+  { label: 'Settings', view: 'settings', icon: Settings },
 ];
 
 export function SidebarNav() {
-  const [active, setActive] = useState('Files');
+  const { activeView, setActiveView } = useNavigation();
 
   return (
     <nav className="space-y-0.5 px-2">
-      {NAV_ITEMS.map(({ label, icon: Icon }) => (
+      {NAV_ITEMS.map(({ label, view, icon: Icon }) => (
         <button
-          key={label}
-          onClick={() => setActive(label)}
+          key={view}
+          onClick={() => setActiveView(view)}
           className={cn(
             'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
-            active === label
+            activeView === view
               ? 'bg-accent text-accent-foreground font-medium'
               : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
           )}

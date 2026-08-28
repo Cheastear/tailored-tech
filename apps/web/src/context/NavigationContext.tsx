@@ -2,6 +2,8 @@ import { createContext, ReactNode, useCallback, useContext, useState } from 'rea
 import { useSearchParams } from 'react-router-dom';
 import type { Space } from '@/types/space';
 
+export type ActiveView = 'files' | 'members' | 'settings';
+
 interface NavFolder {
   id: string;
   name: string;
@@ -11,6 +13,8 @@ interface NavigationContextValue {
   spaceId: string | null;
   folderId: string | undefined;
   folderPath: NavFolder[];
+  activeView: ActiveView;
+  setActiveView: (view: ActiveView) => void;
   setSpace: (space: Space) => void;
   enterFolder: (folder: NavFolder) => void;
   navigateTo: (index: number) => void;
@@ -21,6 +25,7 @@ const NavigationContext = createContext<NavigationContextValue | null>(null);
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [folderPath, setFolderPath] = useState<NavFolder[]>([]);
+  const [activeView, setActiveView] = useState<ActiveView>('files');
 
   const spaceId = searchParams.get('spaceId');
   const folderId = searchParams.get('folderId') ?? undefined;
@@ -56,7 +61,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <NavigationContext.Provider value={{ spaceId, folderId, folderPath, setSpace, enterFolder, navigateTo }}>
+    <NavigationContext.Provider value={{ spaceId, folderId, folderPath, activeView, setActiveView, setSpace, enterFolder, navigateTo }}>
       {children}
     </NavigationContext.Provider>
   );
