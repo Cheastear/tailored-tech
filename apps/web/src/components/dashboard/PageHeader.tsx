@@ -11,12 +11,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useNavigation } from '@/context/NavigationContext';
+import { useCanWrite } from '@/hooks/useCanWrite';
 import { useGetSpacesQuery } from '@/store/spacesApi';
 import { UploadModal } from './UploadModal';
 
 export function PageHeader() {
   const { spaceId, folderPath, navigateTo, activeView } = useNavigation();
   const { data: spaces = [] } = useGetSpacesQuery();
+  const canWrite = useCanWrite();
   const [uploadOpen, setUploadOpen] = useState(false);
 
   const spaceName = spaces.find((s) => s.id === spaceId)?.name ?? '…';
@@ -78,7 +80,7 @@ export function PageHeader() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {spaceId && activeView === 'files' && (
+      {spaceId && activeView === 'files' && canWrite && (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1.5">
             <Filter className="h-4 w-4" />

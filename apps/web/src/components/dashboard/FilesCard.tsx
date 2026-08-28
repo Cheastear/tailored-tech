@@ -4,19 +4,21 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { rejectOversized } from '@/lib/upload';
 import { useNavigation } from '@/context/NavigationContext';
+import { useCanWrite } from '@/hooks/useCanWrite';
 import { useUploadFilesMutation } from '@/store/spacesApi';
 import { ContentArea } from './ContentArea';
 import { UploadToast, type UploadProgress } from './UploadToast';
 
 export function FilesCard() {
   const { spaceId, folderId } = useNavigation();
+  const canWrite = useCanWrite();
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
   const [upload] = useUploadFilesMutation();
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!spaceId) return;
+    if (!spaceId || !canWrite) return;
     dragCounter.current++;
     if (dragCounter.current === 1) setDragging(true);
   };
@@ -31,7 +33,7 @@ export function FilesCard() {
     e.preventDefault();
     dragCounter.current = 0;
     setDragging(false);
-    if (!spaceId) return;
+    if (!spaceId || !canWrite) return;
 
     const { valid: files, rejected } = rejectOversized(Array.from(e.dataTransfer.files));
     rejected.forEach((f) => toast.error(`${f.name} exceeds the 500 MB limit`));
