@@ -78,15 +78,15 @@ function ParentFolderItem({ parentFolderId }: { parentFolderId: string | null })
       onDrop={handleDrop}
       className={cn(
         'flex w-full items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left transition-colors',
-        isOver
-          ? 'border-primary bg-primary/5 ring-1 ring-primary'
-          : 'hover:bg-accent/50',
+        isOver ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-accent/50',
       )}
     >
-      <div className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
-        isOver ? 'bg-primary/20' : 'bg-muted',
-      )}>
+      <div
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
+          isOver ? 'bg-primary/20' : 'bg-muted',
+        )}
+      >
         <CornerLeftUp className="h-4 w-4 text-muted-foreground" />
       </div>
       <span className="text-sm font-medium text-muted-foreground">..</span>
@@ -187,7 +187,9 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {folderId && (
                   <ParentFolderItem
-                    parentFolderId={folderPath.length >= 2 ? folderPath[folderPath.length - 2].id : null}
+                    parentFolderId={
+                      folderPath.length >= 2 ? folderPath[folderPath.length - 2].id : null
+                    }
                   />
                 )}
                 {filteredFolders.map((folder) => (
@@ -225,7 +227,10 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
       {/* Trash drop zone — always mounted, expands/collapses smoothly */}
       {canWrite && (
         <div
-          onDragOver={(e) => { e.preventDefault(); setOverTrash(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setOverTrash(true);
+          }}
           onDragLeave={() => setOverTrash(false)}
           onDrop={handleTrashDrop}
           className={cn(

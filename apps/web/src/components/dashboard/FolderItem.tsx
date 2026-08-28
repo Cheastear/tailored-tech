@@ -89,15 +89,15 @@ export function FolderItem({ folder, onDragStart, onDragEnd }: FolderItemProps) 
       onClick={() => enterFolder({ id: folder.id, name: folder.name })}
       className={cn(
         'flex w-full items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left transition-colors',
-        isOver
-          ? 'border-primary bg-primary/5 ring-1 ring-primary'
-          : 'hover:bg-accent/50',
+        isOver ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-accent/50',
       )}
     >
-      <div className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
-        isOver ? 'bg-primary/20' : 'bg-primary/10',
-      )}>
+      <div
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
+          isOver ? 'bg-primary/20' : 'bg-primary/10',
+        )}
+      >
         <Folder className="h-5 w-5 text-primary" />
       </div>
 

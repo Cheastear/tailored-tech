@@ -25,7 +25,8 @@ export function FilesCard() {
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
   const isFileDrop = (e: React.DragEvent) =>
-    e.dataTransfer.types.includes('Files') && !e.dataTransfer.types.includes('application/x-drag-item');
+    e.dataTransfer.types.includes('Files') &&
+    !e.dataTransfer.types.includes('application/x-drag-item');
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -79,7 +80,14 @@ export function FilesCard() {
           if (now - lastToastUpdate >= 100) {
             lastToastUpdate = now;
             toast.custom(
-              () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
+              () => (
+                <UploadToast
+                  status="uploading"
+                  fileName={file.name}
+                  onCancel={cancel}
+                  progress={progress}
+                />
+              ),
               { id: toastId, duration: Infinity },
             );
           }
@@ -88,7 +96,14 @@ export function FilesCard() {
         mutation = upload({ spaceId, folderId, files: [file], onProgress });
 
         toastId = toast.custom(
-          () => <UploadToast status="uploading" fileName={file.name} onCancel={cancel} progress={progress} />,
+          () => (
+            <UploadToast
+              status="uploading"
+              fileName={file.name}
+              onCancel={cancel}
+              progress={progress}
+            />
+          ),
           { duration: Infinity },
         );
 
@@ -143,7 +158,12 @@ export function FilesCard() {
             </div>
             {canWrite && (
               <>
-                <Button variant="outline" size="sm" className="shrink-0" onClick={() => setCreateFolderOpen(true)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => setCreateFolderOpen(true)}
+                >
                   <FolderPlus className="h-4 w-4" />
                   New folder
                 </Button>

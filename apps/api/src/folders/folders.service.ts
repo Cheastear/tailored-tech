@@ -59,7 +59,8 @@ export class FoldersService {
       // Prevent moving into a descendant
       let cur = target;
       while (cur.parentId) {
-        if (cur.parentId === id) throw new BadRequestException('Cannot move a folder into its own descendant');
+        if (cur.parentId === id)
+          throw new BadRequestException('Cannot move a folder into its own descendant');
         cur = await this.prisma.folder.findFirst({ where: { id: cur.parentId } });
       }
     }

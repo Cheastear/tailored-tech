@@ -40,7 +40,10 @@ export const spacesApi = createApi({
       providesTags: ['Folder'],
     }),
 
-    getFolderAncestors: builder.query<{ id: string; name: string }[], { spaceId: string; folderId: string }>({
+    getFolderAncestors: builder.query<
+      { id: string; name: string }[],
+      { spaceId: string; folderId: string }
+    >({
       query: ({ spaceId, folderId }) => `/spaces/${spaceId}/folders/${folderId}/ancestors`,
     }),
 
@@ -91,7 +94,10 @@ export const spacesApi = createApi({
       invalidatesTags: (_r, _e, { spaceId }) => [{ type: 'Space', id: spaceId }],
     }),
 
-    moveFile: builder.mutation<SpaceFile, { spaceId: string; fileId: string; folderId: string | null }>({
+    moveFile: builder.mutation<
+      SpaceFile,
+      { spaceId: string; fileId: string; folderId: string | null }
+    >({
       query: ({ spaceId, fileId, folderId }) => ({
         url: `/spaces/${spaceId}/files/${fileId}/move`,
         method: 'PATCH',
@@ -108,7 +114,10 @@ export const spacesApi = createApi({
       invalidatesTags: ['File', 'Space'],
     }),
 
-    moveFolder: builder.mutation<Folder, { spaceId: string; folderId: string; parentId: string | null }>({
+    moveFolder: builder.mutation<
+      Folder,
+      { spaceId: string; folderId: string; parentId: string | null }
+    >({
       query: ({ spaceId, folderId, parentId }) => ({
         url: `/spaces/${spaceId}/folders/${folderId}/move`,
         method: 'PATCH',

@@ -15,7 +15,9 @@ export function EmptyFiles({ canWrite, onUpload, onNewFolder }: EmptyFilesProps)
       </div>
       <p className="text-sm font-medium">No files yet</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {canWrite ? 'Upload files or create a folder to get started' : 'This space has no files yet'}
+        {canWrite
+          ? 'Upload files or create a folder to get started'
+          : 'This space has no files yet'}
       </p>
       {canWrite && (
         <div className="mt-4 flex items-center gap-2">

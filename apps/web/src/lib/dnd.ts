@@ -1,6 +1,5 @@
 export type DragItem =
-  | { kind: 'file'; id: string; name: string }
-  | { kind: 'folder'; id: string; name: string };
+  { kind: 'file'; id: string; name: string } | { kind: 'folder'; id: string; name: string };
 
 const MIME = 'application/x-drag-item';
 
