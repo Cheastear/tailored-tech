@@ -50,11 +50,7 @@ export class FoldersController {
   }
 
   @Get(':id/stats')
-  getStats(
-    @Param('spaceId') spaceId: string,
-    @Param('id') id: string,
-    @CurrentUser() user: User,
-  ) {
+  getStats(@Param('spaceId') spaceId: string, @Param('id') id: string, @CurrentUser() user: User) {
     return this.folders.getStats(id, spaceId, user.id);
   }
 

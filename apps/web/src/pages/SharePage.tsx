@@ -34,10 +34,7 @@ export function SharePage() {
     data: share,
     isLoading: shareLoading,
     error: shareError,
-  } = useResolveShareTokenQuery(
-    { token: token!, email: confirmedEmail },
-    { skip: !token },
-  );
+  } = useResolveShareTokenQuery({ token: token!, email: confirmedEmail }, { skip: !token });
 
   const errorStatus = (shareError as any)?.status;
   const is403 = errorStatus === 403;
@@ -70,7 +67,9 @@ export function SharePage() {
   if (!token || isNotFound) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">This share link is invalid or has been revoked.</p>
+        <p className="text-sm text-muted-foreground">
+          This share link is invalid or has been revoked.
+        </p>
       </div>
     );
   }

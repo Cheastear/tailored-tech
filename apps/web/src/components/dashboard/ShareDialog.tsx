@@ -3,12 +3,7 @@ import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -64,7 +59,13 @@ function CopyButton({ token }: { token: string }) {
   );
 }
 
-export function ShareDialog({ open, onOpenChange, resourceType, resourceId, spaceId }: ShareDialogProps) {
+export function ShareDialog({
+  open,
+  onOpenChange,
+  resourceType,
+  resourceId,
+  spaceId,
+}: ShareDialogProps) {
   const [mode, setMode] = useState<'PUBLIC' | 'PERMISSIONED'>('PUBLIC');
   const [emailInput, setEmailInput] = useState('');
 
@@ -180,7 +181,10 @@ export function ShareDialog({ open, onOpenChange, resourceType, resourceId, spac
                       key={share.id}
                       className="flex items-center gap-2 rounded-md border px-3 py-2"
                     >
-                      <Badge variant={share.mode === 'PUBLIC' ? 'secondary' : 'outline'} className="shrink-0 text-xs">
+                      <Badge
+                        variant={share.mode === 'PUBLIC' ? 'secondary' : 'outline'}
+                        className="shrink-0 text-xs"
+                      >
                         {share.mode === 'PUBLIC' ? 'Public' : 'Restricted'}
                       </Badge>
                       <span className="flex-1 truncate text-xs text-muted-foreground font-mono">

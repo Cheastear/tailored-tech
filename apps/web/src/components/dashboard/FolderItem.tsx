@@ -4,7 +4,11 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getDragItem, isDragItem, setDragItem, type DragItem } from '@/lib/dnd';
 import { useNavigation } from '@/context/NavigationContext';
-import { useMoveFolderMutation, useMoveFileMutation, useRenameFolderMutation } from '@/store/spacesApi';
+import {
+  useMoveFolderMutation,
+  useMoveFileMutation,
+  useRenameFolderMutation,
+} from '@/store/spacesApi';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -164,7 +168,9 @@ export function FolderItem({
 
       <button
         className="flex flex-1 items-center gap-3 text-left"
-        onClick={() => !isLoading && !isRenaming && enterFolder({ id: folder.id, name: folder.name })}
+        onClick={() =>
+          !isLoading && !isRenaming && enterFolder({ id: folder.id, name: folder.name })
+        }
         disabled={isLoading || isRenaming}
       >
         <div

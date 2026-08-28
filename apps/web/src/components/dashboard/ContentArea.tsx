@@ -117,8 +117,7 @@ interface ContentAreaProps {
 }
 
 type ShareTarget =
-  | { resourceType: 'FOLDER'; resource: Folder }
-  | { resourceType: 'FILE'; resource: SpaceFile };
+  { resourceType: 'FOLDER'; resource: Folder } | { resourceType: 'FILE'; resource: SpaceFile };
 
 export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps) {
   const { spaceId, folderId, folderPath } = useNavigation();

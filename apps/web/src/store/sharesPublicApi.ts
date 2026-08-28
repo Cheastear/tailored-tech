@@ -37,8 +37,5 @@ export const sharesPublicApi = createApi({
   }),
 });
 
-export const {
-  useResolveShareTokenQuery,
-  useSharePublicFoldersQuery,
-  useSharePublicFilesQuery,
-} = sharesPublicApi;
+export const { useResolveShareTokenQuery, useSharePublicFoldersQuery, useSharePublicFilesQuery } =
+  sharesPublicApi;

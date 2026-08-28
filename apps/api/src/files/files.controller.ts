@@ -62,7 +62,10 @@ export class FilesController {
 
     res.setHeader('Content-Type', file.mimeType);
     const disposition = inline === 'true' ? 'inline' : 'attachment';
-    res.setHeader('Content-Disposition', `${disposition}; filename="${encodeURIComponent(file.name)}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `${disposition}; filename="${encodeURIComponent(file.name)}"`,
+    );
 
     return new StreamableFile(stream);
   }

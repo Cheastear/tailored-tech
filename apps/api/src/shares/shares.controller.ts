@@ -71,10 +71,7 @@ export class SharesController {
     const { stream, file } = await this.shares.downloadFile(token, fileId, email);
 
     res.setHeader('Content-Type', file.mimeType);
-    res.setHeader(
-      'Content-Disposition',
-      `inline; filename="${encodeURIComponent(file.name)}"`,
-    );
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(file.name)}"`);
 
     return new StreamableFile(stream);
   }

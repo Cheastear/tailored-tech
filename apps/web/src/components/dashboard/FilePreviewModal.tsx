@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Download, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatBytes } from '@/lib/format';
 import type { SpaceFile } from '@/types/file';
 
@@ -51,13 +46,7 @@ export function FilePreviewModal({ file, onClose, downloadUrl }: FilePreviewModa
     if (!file) return null;
 
     if (file.mimeType.startsWith('image/')) {
-      return (
-        <img
-          src={inlineUrl}
-          alt={file.name}
-          className="w-full rounded-md object-contain"
-        />
-      );
+      return <img src={inlineUrl} alt={file.name} className="w-full rounded-md object-contain" />;
     }
 
     if (file.mimeType === 'application/pdf') {

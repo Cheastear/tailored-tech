@@ -21,7 +21,12 @@ interface DeleteFolderDialogProps {
   spaceId: string;
 }
 
-export function DeleteFolderDialog({ open, onOpenChange, folder, spaceId }: DeleteFolderDialogProps) {
+export function DeleteFolderDialog({
+  open,
+  onOpenChange,
+  folder,
+  spaceId,
+}: DeleteFolderDialogProps) {
   const [deleteFolder] = useDeleteFolderMutation();
   const [confirming, setConfirming] = useState(false);
 

@@ -14,7 +14,8 @@ export class SharesService {
 
   async create(userId: string, dto: CreateShareDto) {
     const setIds = [dto.spaceId, dto.folderId, dto.fileId].filter(Boolean);
-    if (setIds.length !== 1) throw new BadRequestException('Exactly one resource must be specified');
+    if (setIds.length !== 1)
+      throw new BadRequestException('Exactly one resource must be specified');
 
     if (dto.mode === 'PERMISSIONED' && (!dto.allowedEmails || dto.allowedEmails.length === 0)) {
       throw new BadRequestException('Permissioned shares require at least one email');
