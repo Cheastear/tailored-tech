@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { FolderPlus, Search, Upload } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { rejectOversized } from '@/lib/upload';
 import { useNavigation } from '@/context/NavigationContext';
 import { useCanWrite } from '@/hooks/useCanWrite';
-import { useUploadFilesMutation } from '@/store/spacesApi';
+import { useGetFilesQuery, useUploadFilesMutation } from '@/store/spacesApi';
 import { ContentArea } from './ContentArea';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { UploadModal } from './UploadModal';
@@ -16,6 +17,10 @@ import { UploadToast, type UploadProgress } from './UploadToast';
 export function FilesCard() {
   const { spaceId, folderId } = useNavigation();
   const canWrite = useCanWrite();
+  const { refetch: refetchFiles } = useGetFilesQuery(
+    { spaceId: spaceId!, folderId },
+    { skip: !spaceId },
+  );
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
   const [upload] = useUploadFilesMutation();
@@ -109,6 +114,7 @@ export function FilesCard() {
 
         try {
           await mutation.unwrap();
+          refetchFiles();
           toast.custom(() => <UploadToast status="done" fileName={file.name} />, {
             id: toastId,
             duration: 2500,
@@ -138,12 +144,15 @@ export function FilesCard() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {dragging && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary bg-primary/5">
-            <Upload className="h-8 w-8 text-primary" />
-            <p className="text-sm font-medium text-primary">Drop to upload</p>
-          </div>
-        )}
+        <div
+          className={cn(
+            'absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary bg-card/50 backdrop-blur-sm transition-all duration-200',
+            dragging ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
+          )}
+        >
+          <Upload className="h-8 w-8 text-primary" />
+          <p className="text-sm font-medium text-primary">Drop to upload</p>
+        </div>
 
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">

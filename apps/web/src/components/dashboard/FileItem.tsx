@@ -1,8 +1,9 @@
-import { Download, File, FileImage, FileText, FileVideo } from 'lucide-react';
+import { Download, File, FileImage, FileText, FileVideo, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatBytes } from '@/lib/format';
 import { setDragItem, type DragItem } from '@/lib/dnd';
 import { apiBase } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import type { SpaceFile } from '@/types/file';
 
 function FileIcon({ mimeType }: { mimeType: string }) {
@@ -17,12 +18,14 @@ interface FileItemProps {
   file: SpaceFile;
   onDragStart: (item: DragItem) => void;
   onDragEnd: () => void;
+  isLoading?: boolean;
 }
 
-export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
+export function FileItem({ file, onDragStart, onDragEnd, isLoading }: FileItemProps) {
   const downloadUrl = `${apiBase}/spaces/${file.spaceId}/files/${file.id}/download`;
 
   const handleDragStart = (e: React.DragEvent) => {
+    if (isLoading) return;
     const item: DragItem = { kind: 'file', id: file.id, name: file.name };
     setDragItem(e, item);
     onDragStart(item);
@@ -30,11 +33,22 @@ export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
 
   return (
     <div
-      draggable
+      draggable={!isLoading}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
-      className="flex cursor-grab items-center gap-3 rounded-lg border bg-card px-4 py-3 active:cursor-grabbing active:opacity-60"
+      className={cn(
+        'relative flex items-center gap-3 rounded-lg border bg-card px-4 py-3 transition-opacity',
+        isLoading
+          ? 'cursor-default opacity-60'
+          : 'cursor-grab active:cursor-grabbing active:opacity-60',
+      )}
     >
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-lg">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
         <FileIcon mimeType={file.mimeType} />
       </div>
@@ -51,6 +65,7 @@ export function FileItem({ file, onDragStart, onDragEnd }: FileItemProps) {
         size="icon"
         className="h-8 w-8 shrink-0"
         asChild
+        disabled={isLoading}
         onClick={(e) => e.stopPropagation()}
       >
         <a href={downloadUrl} download={file.name} title="Download">

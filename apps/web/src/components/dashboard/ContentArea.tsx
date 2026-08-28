@@ -17,8 +17,15 @@ import { EmptyFiles } from './EmptyFiles';
 import { FileItem } from './FileItem';
 import { FolderItem } from './FolderItem';
 
-// The ".." entry — navigates up and accepts drops to move items to the parent
-function ParentFolderItem({ parentFolderId }: { parentFolderId: string | null }) {
+function ParentFolderItem({
+  parentFolderId,
+  onMoveStart,
+  onMoveEnd,
+}: {
+  parentFolderId: string | null;
+  onMoveStart: (id: string) => void;
+  onMoveEnd: (id: string) => void;
+}) {
   const { spaceId, folderPath, navigateTo } = useNavigation();
   const [moveFile] = useMoveFileMutation();
   const [moveFolder] = useMoveFolderMutation();
@@ -54,6 +61,8 @@ function ParentFolderItem({ parentFolderId }: { parentFolderId: string | null })
     setIsOver(false);
     const item = getDragItem(e);
     if (!item || !spaceId) return;
+
+    onMoveStart(item.id);
     try {
       if (item.kind === 'file') {
         await moveFile({ spaceId, fileId: item.id, folderId: parentFolderId }).unwrap();
@@ -63,10 +72,11 @@ function ParentFolderItem({ parentFolderId }: { parentFolderId: string | null })
       toast.success(`Moved "${item.name}" to ${parentFolderId ? 'parent folder' : 'root'}`);
     } catch (err: unknown) {
       toast.error((err as any)?.data?.message ?? 'Move failed');
+    } finally {
+      onMoveEnd(item.id);
     }
   };
 
-  // suppress unused warning
   void counter;
 
   return (
@@ -108,6 +118,15 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
 
   const [draggingItem, setDraggingItem] = useState<DragItem | null>(null);
   const [overTrash, setOverTrash] = useState(false);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+
+  const addPending = (id: string) => setPendingIds((prev) => new Set([...prev, id]));
+  const removePending = (id: string) =>
+    setPendingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
 
   const foldersQuery = useGetFoldersQuery(
     { spaceId: spaceId!, parentId: folderId },
@@ -126,6 +145,7 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
     const item = getDragItem(e);
     if (!item || !spaceId) return;
 
+    addPending(item.id);
     try {
       if (item.kind === 'file') {
         await deleteFile({ spaceId, fileId: item.id }).unwrap();
@@ -135,8 +155,10 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
       toast.success(`"${item.name}" deleted`);
     } catch {
       toast.error('Delete failed');
+    } finally {
+      removePending(item.id);
+      setDraggingItem(null);
     }
-    setDraggingItem(null);
   };
 
   if (!spaceId) {
@@ -168,7 +190,7 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
   const noResults = !!q && filteredFolders.length === 0 && filteredFiles.length === 0;
 
   return (
-    <div className="space-y-6">
+    <div className={cn('space-y-6', draggingItem && '')}>
       {isEmpty ? (
         <EmptyFiles canWrite={canWrite} onUpload={onUpload} onNewFolder={onNewFolder} />
       ) : noResults ? (
@@ -190,6 +212,8 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
                     parentFolderId={
                       folderPath.length >= 2 ? folderPath[folderPath.length - 2].id : null
                     }
+                    onMoveStart={addPending}
+                    onMoveEnd={removePending}
                   />
                 )}
                 {filteredFolders.map((folder) => (
@@ -198,6 +222,9 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
                     folder={folder}
                     onDragStart={setDraggingItem}
                     onDragEnd={handleDragEnd}
+                    isLoading={pendingIds.has(folder.id)}
+                    onMoveStart={addPending}
+                    onMoveEnd={removePending}
                   />
                 ))}
               </div>
@@ -216,6 +243,7 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
                     file={file}
                     onDragStart={setDraggingItem}
                     onDragEnd={handleDragEnd}
+                    isLoading={pendingIds.has(file.id)}
                   />
                 ))}
               </div>
@@ -224,7 +252,6 @@ export function ContentArea({ search, onUpload, onNewFolder }: ContentAreaProps)
         </>
       )}
 
-      {/* Trash drop zone — always mounted, expands/collapses smoothly */}
       {canWrite && (
         <div
           onDragOver={(e) => {

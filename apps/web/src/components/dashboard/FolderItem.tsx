@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Folder } from 'lucide-react';
+import { Folder, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getDragItem, isDragItem, setDragItem, type DragItem } from '@/lib/dnd';
@@ -11,9 +11,12 @@ interface FolderItemProps {
   folder: FolderType;
   onDragStart: (item: DragItem) => void;
   onDragEnd: () => void;
+  isLoading?: boolean;
+  onMoveStart?: (id: string) => void;
+  onMoveEnd?: (id: string) => void;
 }
 
-export function FolderItem({ folder, onDragStart, onDragEnd }: FolderItemProps) {
+export function FolderItem({ folder, onDragStart, onDragEnd, isLoading, onMoveStart, onMoveEnd }: FolderItemProps) {
   const { spaceId, enterFolder } = useNavigation();
   const [moveFolder] = useMoveFolderMutation();
   const [moveFile] = useMoveFileMutation();
@@ -23,11 +26,10 @@ export function FolderItem({ folder, onDragStart, onDragEnd }: FolderItemProps) 
   const count = folder._count.children + folder._count.files;
 
   const handleDragStart = (e: React.DragEvent) => {
+    if (isLoading) return;
     const item: DragItem = { kind: 'folder', id: folder.id, name: folder.name };
     setDragItem(e, item);
     onDragStart(item);
-    // hide the element ghost slightly so it doesn't look weird
-    setTimeout(() => (e.target as HTMLElement).style.opacity, 0);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -62,8 +64,9 @@ export function FolderItem({ folder, onDragStart, onDragEnd }: FolderItemProps) 
 
     const item = getDragItem(e);
     if (!item || !spaceId) return;
-    if (item.kind === 'folder' && item.id === folder.id) return; // dropping onto itself
+    if (item.kind === 'folder' && item.id === folder.id) return;
 
+    onMoveStart?.(item.id);
     try {
       if (item.kind === 'file') {
         await moveFile({ spaceId, fileId: item.id, folderId: folder.id }).unwrap();
@@ -74,24 +77,36 @@ export function FolderItem({ folder, onDragStart, onDragEnd }: FolderItemProps) 
     } catch (err: unknown) {
       const message = (err as any)?.data?.message ?? 'Move failed';
       toast.error(message);
+    } finally {
+      onMoveEnd?.(item.id);
     }
   };
 
   return (
     <button
-      draggable
+      draggable={!isLoading}
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onClick={() => enterFolder({ id: folder.id, name: folder.name })}
+      onClick={() => !isLoading && enterFolder({ id: folder.id, name: folder.name })}
       className={cn(
-        'flex w-full items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left transition-colors',
-        isOver ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-accent/50',
+        'relative flex w-full items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left transition-colors',
+        isLoading
+          ? 'cursor-default opacity-60'
+          : isOver
+            ? 'border-primary bg-primary/5 ring-1 ring-primary'
+            : 'hover:bg-accent/50',
       )}
     >
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center rounded-lg">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
       <div
         className={cn(
           'flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors',
