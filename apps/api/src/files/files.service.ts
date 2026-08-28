@@ -12,7 +12,7 @@ export class FilesService {
     private spaces: SpacesService,
   ) {}
 
-  async upload(spaceId: string, userId: string, file: Express.Multer.File, folderId?: string) {
+  async upload(spaceId: string, userId: string, files: Express.Multer.File[], folderId?: string) {
     await this.spaces.assertWriteAccess(spaceId, userId);
 
     if (folderId) {
@@ -20,26 +20,30 @@ export class FilesService {
       if (!folder) throw new NotFoundException('Folder not found');
     }
 
-    const blob = await put(`spaces/${spaceId}/${file.originalname}`, file.buffer, {
-      access: 'private',
-      contentType: file.mimetype,
-      addRandomSuffix: true,
-    });
+    return Promise.all(
+      files.map(async (file) => {
+        const blob = await put(`spaces/${spaceId}/${file.originalname}`, file.buffer, {
+          access: 'private',
+          contentType: file.mimetype,
+          addRandomSuffix: true,
+        });
 
-    return this.prisma.file.create({
-      data: {
-        name: file.originalname,
-        url: blob.url,
-        size: file.size,
-        mimeType: file.mimetype,
-        spaceId,
-        folderId: folderId ?? null,
-        uploadedById: userId,
-      },
-      include: {
-        uploadedBy: { select: { id: true, email: true, name: true } },
-      },
-    });
+        return this.prisma.file.create({
+          data: {
+            name: file.originalname,
+            url: blob.url,
+            size: file.size,
+            mimeType: file.mimetype,
+            spaceId,
+            folderId: folderId ?? null,
+            uploadedById: userId,
+          },
+          include: {
+            uploadedBy: { select: { id: true, email: true, name: true } },
+          },
+        });
+      }),
+    );
   }
 
   async findAll(spaceId: string, userId: string, folderId?: string) {

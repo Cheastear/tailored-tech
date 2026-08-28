@@ -7,11 +7,11 @@ import {
   Query,
   Res,
   StreamableFile,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { User } from '@prisma/client';
 import { Response } from 'express';
 import { memoryStorage } from 'multer';
@@ -35,14 +35,14 @@ export class FilesController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  @UseInterceptors(AnyFilesInterceptor({ storage: memoryStorage() }))
   upload(
     @Param('spaceId') spaceId: string,
     @CurrentUser() user: User,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Query('folderId') folderId?: string,
   ) {
-    return this.files.upload(spaceId, user.id, file, folderId);
+    return this.files.upload(spaceId, user.id, files, folderId);
   }
 
   @Get(':id/download')
